@@ -1,0 +1,3326 @@
+<!DOCTYPE html>
+<html lang="ko">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0, user-scalable=no">
+    <title>천억부자 타이머 - 파이널 프리미엄</title>
+    <style>
+        /* 프리미엄 화이트/블랙/골드 테마 */
+        * {
+            margin: 0;
+            padding: 0;
+            box-sizing: border-box;
+            -webkit-tap-highlight-color: transparent;
+        }
+
+        body {
+            font-family: -apple-system, BlinkMacSystemFont, 'Segoe UI', 'Malgun Gothic', system-ui, sans-serif;
+            background: linear-gradient(135deg, #ffffff 0%, #f8f9fa 50%, #ffffff 100%);
+            color: #000000;
+            line-height: 1.6;
+            height: 100vh;
+            overflow: hidden;
+            position: relative;
+        }
+
+        /* 크롬 확장 팝업 전용 사이즈 고정 (초기 폭/높이 왜곡 방지) */
+        body.chrome-ext {
+            width: 420px;
+            min-width: 420px;
+            height: 600px;
+            min-height: 600px;
+            overflow: hidden;
+        }
+
+        .app-container {
+            height: 100vh;
+            display: flex;
+            flex-direction: column;
+            position: relative;
+        }
+
+        /* 단색 SVG 아이콘 시스템 */
+        .icon {
+            display: inline-flex;
+            align-items: center;
+            justify-content: center;
+            width: 20px;
+            height: 20px;
+            font-size: 16px;
+            font-weight: 600;
+        }
+
+        .icon-target::before { content: "⦿"; }
+        .icon-list::before { content: "☰"; }
+        .icon-timer::before { content: "⧖"; }
+        .icon-bulb::before { content: "◉"; }
+        .icon-play::before { content: "▶"; }
+        .icon-pause::before { content: "⏸"; }
+        .icon-stop::before { content: "⏹"; }
+        .icon-complete::before { content: "✓"; }
+        .icon-give-up::before { content: "✗"; }
+        .icon-edit::before { content: "✎"; }
+        .icon-delete::before { content: "⌫"; }
+        .icon-convert::before { content: "⟹"; }
+        .icon-plus::before { content: "+"; }
+        .icon-save::before { content: "✓"; }
+        .icon-cancel::before { content: "✕"; }
+        .icon-menu::before { content: "⋯"; }
+        .icon-settings::before { content: "⚙"; }
+        .icon-close::before { content: "✕"; }
+        .icon-report::before { content: "▦"; }
+
+        /* 헤더 */
+        .header {
+            background: linear-gradient(135deg, #ffffff 0%, #fafafa 100%);
+            padding: 12px 16px;
+            border-bottom: 1px solid #d4af37;
+            box-shadow: 0 2px 12px rgba(212,175,55,0.12);
+            position: relative;
+            z-index: 100;
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+            gap: 10px;
+        }
+
+        .header::before {
+            content: '';
+            position: absolute;
+            bottom: 0;
+            left: 0;
+            right: 0;
+            height: 3px;
+            background: linear-gradient(90deg, #d4af37, #b8860b, #daa520);
+        }
+
+        .header-left { display: flex; align-items: baseline; gap: 8px; }
+        .header-center { flex: 1; text-align: center; }
+        .header-status { display: inline-flex; gap: 12px; align-items: center; }
+        .header-pill { background: #f8f9fa; border: 1px solid #e9ecef; border-radius: 999px; padding: 6px 10px; font-size: 12px; font-weight: 700; color: #333; }
+        .header-pill.gold { border-color: #d4af37; color: #d4af37; }
+
+        .header h1 {
+            font-size: 24px;
+            font-weight: 800;
+            color: #000000;
+            margin-bottom: 5px;
+            letter-spacing: -0.8px;
+        }
+
+        .header .subtitle {
+            color: #666666;
+            font-size: 14px;
+            font-weight: 600;
+            letter-spacing: 0.5px;
+        }
+
+        .menu-btn {
+            width: 40px;
+            height: 40px;
+            border: none;
+            background: linear-gradient(135deg, #d4af37 0%, #b8860b 100%);
+            border-radius: 12px;
+            color: white;
+            font-size: 18px;
+            cursor: pointer;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            box-shadow: 0 4px 15px rgba(212,175,55,0.3);
+            transition: all 0.3s ease;
+        }
+
+        .menu-btn:hover {
+            transform: translateY(-2px);
+            box-shadow: 0 6px 20px rgba(212,175,55,0.4);
+        }
+
+        .subad-badge { position: static; background: none; color: #d4af37; font-weight: 800; padding: 0; border-radius: 0; font-size: 12px; text-decoration: none; }
+        .subad-badge:hover { text-decoration: underline; }
+
+        /* 메인 콘텐츠 영역 */
+        .main-content {
+            flex: 1;
+            overflow-y: auto;
+            padding-bottom: 80px;
+            -webkit-overflow-scrolling: touch;
+        }
+
+        /* 탭 콘텐츠 */
+        .tab-content {
+            display: none;
+            padding: 25px;
+            height: 100%;
+            overflow-y: auto;
+        }
+
+        .tab-content.active {
+            display: block;
+        }
+
+        /* 목표 설정 탭 - 시작 화면 */
+        .goal-setup {
+            text-align: center;
+            padding: 40px 20px;
+        }
+
+        .setup-title {
+            font-size: 28px;
+            font-weight: 800;
+            color: #000000;
+            margin-bottom: 15px;
+            letter-spacing: -1px;
+        }
+
+        .setup-subtitle {
+            font-size: 16px;
+            color: #666666;
+            margin-bottom: 40px;
+            line-height: 1.5;
+        }
+
+        .goal-input-section {
+            background: #ffffff;
+            padding: 30px;
+            border-radius: 20px;
+            margin-bottom: 30px;
+            border: 2px solid #d4af37;
+            box-shadow: 0 8px 30px rgba(212,175,55,0.2);
+        }
+
+        .input-group {
+            margin-bottom: 25px;
+        }
+
+        .input-group label {
+            display: block;
+            font-size: 15px;
+            font-weight: 700;
+            color: #000000;
+            margin-bottom: 10px;
+            text-align: left;
+        }
+
+        .input-group input, .input-group textarea {
+            width: 100%;
+            padding: 18px 20px;
+            border: 2px solid #e9ecef;
+            border-radius: 15px;
+            font-size: 18px;
+            font-weight: 600;
+            background: #ffffff;
+            transition: all 0.3s ease;
+            text-align: center;
+        }
+
+        .input-group input:focus, .input-group textarea:focus {
+            outline: none;
+            border-color: #d4af37;
+            box-shadow: 0 0 0 4px rgba(212,175,55,0.15);
+            transform: translateY(-2px);
+        }
+
+        .input-group textarea {
+            min-height: 120px;
+            resize: vertical;
+            text-align: left;
+        }
+
+        .currency-symbol {
+            position: relative;
+        }
+
+        .currency-symbol::before {
+            content: '₩';
+            position: absolute;
+            left: 20px;
+            top: 50%;
+            transform: translateY(-50%);
+            font-size: 18px;
+            font-weight: 700;
+            color: #d4af37;
+            z-index: 10;
+        }
+
+        .currency-symbol input {
+            padding-left: 45px;
+        }
+
+        .conversion-display {
+            background: linear-gradient(135deg, #f8f9fa 0%, #ffffff 100%);
+            padding: 20px;
+            border-radius: 15px;
+            margin-top: 20px;
+            border: 1px solid #e9ecef;
+        }
+
+        .conversion-grid {
+            display: grid;
+            grid-template-columns: 1fr 1fr;
+            gap: 15px;
+            margin-bottom: 20px;
+        }
+
+        .conversion-card {
+            background: #ffffff;
+            padding: 18px;
+            border-radius: 12px;
+            text-align: center;
+            border: 1px solid #e9ecef;
+            position: relative;
+            overflow: hidden;
+        }
+
+        .conversion-card.current {
+            border-left: 4px solid #6c757d;
+        }
+
+        .conversion-card.target {
+            border-left: 4px solid #d4af37;
+        }
+
+        .conversion-label {
+            font-size: 12px;
+            color: #666666;
+            font-weight: 700;
+            margin-bottom: 8px;
+            text-transform: uppercase;
+            letter-spacing: 1px;
+        }
+
+        .conversion-value {
+            font-size: 18px;
+            font-weight: 800;
+            color: #d4af37;
+            margin-bottom: 6px;
+        }
+
+        .conversion-value.current {
+            color: #6c757d;
+        }
+
+        .conversion-delta {
+            font-size: 11px;
+            font-weight: 600;
+            padding: 3px 8px;
+            border-radius: 12px;
+            background: rgba(212,175,55,0.1);
+            color: #d4af37;
+        }
+
+        .daily-focus-card {
+            background: linear-gradient(135deg, #e3f2fd 0%, #f3e5f5 100%);
+            padding: 20px;
+            border-radius: 15px;
+            margin-top: 15px;
+            border: 2px solid #d4af37;
+            text-align: center;
+        }
+
+        .daily-focus-title {
+            font-size: 14px;
+            font-weight: 700;
+            color: #000000;
+            margin-bottom: 10px;
+        }
+
+        .daily-focus-time {
+            font-size: 28px;
+            font-weight: 800;
+            color: #d4af37;
+            margin-bottom: 5px;
+        }
+
+        .daily-focus-subtitle {
+            font-size: 12px;
+            color: #666666;
+            font-weight: 600;
+        }
+
+        /* 이익/손실 통계 표시 */
+        .profit-loss-stats {
+            background: linear-gradient(135deg, #ffffff 0%, #f8f9fa 100%);
+            padding: 25px;
+            border-radius: 20px;
+            margin-top: 20px;
+            border: 2px solid #d4af37;
+            box-shadow: 0 8px 30px rgba(212,175,55,0.15);
+        }
+
+        .stats-grid {
+            display: grid;
+            grid-template-columns: 1fr 1fr;
+            gap: 15px;
+            margin-bottom: 20px;
+        }
+
+        .stat-item {
+            background: #ffffff;
+            padding: 20px;
+            border-radius: 15px;
+            text-align: center;
+            border: 1px solid #e9ecef;
+        }
+
+        .stat-item.profit {
+            border-left: 4px solid #d4af37;
+        }
+
+        .stat-item.loss {
+            border-left: 4px solid #000000;
+        }
+
+        .stat-label {
+            font-size: 12px;
+            color: #666666;
+            font-weight: 700;
+            margin-bottom: 8px;
+            text-transform: uppercase;
+            letter-spacing: 1px;
+        }
+
+        .stat-value {
+            font-size: 18px;
+            font-weight: 800;
+        }
+
+        .stat-value.profit-color {
+            color: #d4af37;
+        }
+
+        .stat-value.loss-color {
+            color: #000000;
+        }
+
+        .days-info {
+            text-align: center;
+            font-size: 14px;
+            color: #666666;
+            font-weight: 600;
+        }
+
+        .gold-button {
+            background: linear-gradient(135deg, #d4af37 0%, #b8860b 50%, #daa520 100%);
+            color: #ffffff;
+            border: none;
+            padding: 18px 40px;
+            border-radius: 15px;
+            font-size: 18px;
+            font-weight: 700;
+            cursor: pointer;
+            transition: all 0.3s ease;
+            box-shadow: 0 6px 20px rgba(212,175,55,0.4);
+            letter-spacing: 0.5px;
+            width: 100%;
+        }
+
+        .gold-button:hover, .gold-button:active {
+            transform: translateY(-3px);
+            box-shadow: 0 10px 30px rgba(212,175,55,0.5);
+        }
+
+        /* 목표 표시 (설정 완료 후) */
+        .goal-display {
+            background: #ffffff;
+            padding: 25px;
+            border-radius: 20px;
+            margin-bottom: 25px;
+            border: 2px solid #d4af37;
+            box-shadow: 0 8px 30px rgba(212,175,55,0.15);
+        }
+
+        .goal-header {
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+            margin-bottom: 20px;
+        }
+
+        .goal-header h2 {
+            font-size: 20px;
+            color: #000000;
+            font-weight: 800;
+        }
+
+        .goal-actions {
+            display: flex;
+            gap: 10px;
+        }
+
+        .edit-btn, .reset-btn {
+            background: linear-gradient(135deg, #d4af37 0%, #b8860b 100%);
+            color: white;
+            border: none;
+            padding: 10px 16px;
+            border-radius: 12px;
+            font-size: 12px;
+            font-weight: 700;
+            cursor: pointer;
+            display: flex;
+            align-items: center;
+            gap: 5px;
+            transition: all 0.3s ease;
+        }
+
+        .reset-btn {
+            background: linear-gradient(135deg, #000000 0%, #333333 100%);
+        }
+
+        .edit-btn:hover, .reset-btn:hover {
+            transform: translateY(-2px);
+            box-shadow: 0 4px 15px rgba(0,0,0,0.2);
+        }
+
+        .setup-header {
+            display: flex;
+            align-items: center;
+            margin-bottom: 20px;
+            position: relative;
+        }
+
+        .back-btn {
+            background: none;
+            border: 2px solid #d4af37;
+            color: #d4af37;
+            padding: 8px 12px;
+            border-radius: 10px;
+            font-size: 12px;
+            font-weight: 700;
+            cursor: pointer;
+            display: flex;
+            align-items: center;
+            gap: 5px;
+            position: absolute;
+            left: 0;
+            transition: all 0.3s ease;
+        }
+
+        .back-btn:hover {
+            background: #d4af37;
+            color: white;
+        }
+
+        .setup-title {
+            flex: 1;
+            text-align: center;
+            margin: 0;
+        }
+
+        .goal-grid {
+            display: grid;
+            grid-template-columns: 1fr 1fr;
+            gap: 15px;
+            margin-bottom: 25px;
+        }
+
+        .goal-item {
+            background: linear-gradient(135deg, #fafafa 0%, #ffffff 100%);
+            padding: 20px;
+            border-radius: 15px;
+            text-align: center;
+            border: 1px solid #e9ecef;
+        }
+
+        .goal-label {
+            font-size: 12px;
+            color: #666666;
+            font-weight: 700;
+            margin-bottom: 8px;
+            text-transform: uppercase;
+            letter-spacing: 1px;
+        }
+
+        .goal-value {
+            font-size: 20px;
+            font-weight: 800;
+            color: #d4af37;
+            margin-bottom: 4px;
+        }
+
+        .goal-amount {
+            font-size: 12px;
+            font-weight: 600;
+            color: #666666;
+            letter-spacing: 0.3px;
+        }
+
+        /* 진행률 원형 게이지 */
+        .progress-section {
+            text-align: center;
+        }
+
+        .progress-circle {
+            width: 140px;
+            height: 140px;
+            margin: 0 auto 20px;
+            position: relative;
+        }
+
+        .progress-circle svg {
+            width: 100%;
+            height: 100%;
+            transform: rotate(-90deg);
+        }
+
+        .progress-circle .bg-circle {
+            fill: none;
+            stroke: #e9ecef;
+            stroke-width: 8;
+        }
+
+        .progress-circle .progress-circle-fill {
+            fill: none;
+            stroke: url(#goldGradient);
+            stroke-width: 8;
+            stroke-linecap: round;
+            transition: stroke-dasharray 0.5s ease;
+        }
+
+        .progress-text {
+            position: absolute;
+            top: 50%;
+            left: 50%;
+            transform: translate(-50%, -50%);
+            font-size: 22px;
+            font-weight: 800;
+            color: #d4af37;
+        }
+
+        /* 섹션 헤더 */
+        .section-header {
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+            margin-bottom: 25px;
+        }
+
+        .section-header h2 {
+            font-size: 22px;
+            color: #000000;
+            font-weight: 800;
+        }
+
+        .add-btn {
+            background: linear-gradient(135deg, #d4af37 0%, #b8860b 100%);
+            color: white;
+            border: none;
+            padding: 12px;
+            border-radius: 50%;
+            width: 45px;
+            height: 45px;
+            font-size: 20px;
+            cursor: pointer;
+            box-shadow: 0 6px 20px rgba(212,175,55,0.4);
+            display: flex;
+            align-items: center;
+            justify-content: center;
+        }
+
+        /* 입력 폼 */
+        .input-form {
+            background: #ffffff;
+            padding: 25px;
+            border-radius: 20px;
+            margin-bottom: 25px;
+            border: 2px solid #d4af37;
+            box-shadow: 0 8px 30px rgba(212,175,55,0.15);
+            display: none;
+        }
+
+        .time-selector {
+            margin-bottom: 20px;
+        }
+
+        .time-chips {
+            display: flex;
+            gap: 10px;
+            margin-bottom: 15px;
+        }
+
+        .time-slider-container {
+            margin-bottom: 15px;
+        }
+
+        .time-slider {
+            width: 100%;
+            height: 6px;
+            border-radius: 3px;
+            background: #e9ecef;
+            outline: none;
+            -webkit-appearance: none;
+            appearance: none;
+        }
+
+        .time-slider::-webkit-slider-thumb {
+            -webkit-appearance: none;
+            appearance: none;
+            width: 22px;
+            height: 22px;
+            border-radius: 50%;
+            background: linear-gradient(135deg, #d4af37 0%, #b8860b 100%);
+            cursor: pointer;
+            box-shadow: 0 2px 8px rgba(212,175,55,0.4);
+        }
+
+        .time-slider::-moz-range-thumb {
+            width: 22px;
+            height: 22px;
+            border-radius: 50%;
+            background: linear-gradient(135deg, #d4af37 0%, #b8860b 100%);
+            cursor: pointer;
+            border: none;
+            box-shadow: 0 2px 8px rgba(212,175,55,0.4);
+        }
+
+        .time-display {
+            text-align: center;
+            font-size: 16px;
+            font-weight: 700;
+            color: #d4af37;
+            margin-bottom: 10px;
+        }
+
+        .money-preview {
+            text-align: center;
+            font-size: 12px;
+            color: #666666;
+            margin-bottom: 15px;
+        }
+
+        .repeat-selector {
+            display: flex;
+            gap: 10px;
+            margin-bottom: 20px;
+        }
+
+        .option-btn {
+            flex: 1;
+            padding: 12px;
+            border: 2px solid #e9ecef;
+            border-radius: 10px;
+            text-align: center;
+            font-size: 14px;
+            font-weight: 700;
+            cursor: pointer;
+            transition: all 0.3s ease;
+            background: #ffffff;
+            color: #666666;
+        }
+
+        .option-btn.selected {
+            background: linear-gradient(135deg, #d4af37 0%, #b8860b 100%);
+            color: white;
+            border-color: #d4af37;
+            box-shadow: 0 4px 15px rgba(212,175,55,0.3);
+        }
+
+        .btn-group {
+            display: flex;
+            gap: 15px;
+            margin-top: 20px;
+        }
+
+        .btn {
+            flex: 1;
+            padding: 15px;
+            border: none;
+            border-radius: 12px;
+            font-size: 15px;
+            font-weight: 700;
+            cursor: pointer;
+            transition: all 0.3s ease;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            gap: 8px;
+        }
+
+        .btn.primary {
+            background: linear-gradient(135deg, #d4af37 0%, #b8860b 100%);
+            color: white;
+            box-shadow: 0 4px 15px rgba(212,175,55,0.3);
+        }
+
+        .btn.secondary {
+            background: #f8f9fa;
+            color: #666666;
+            border: 2px solid #e9ecef;
+        }
+
+        /* 아이템 목록 */
+        .item-list {
+            display: flex;
+            flex-direction: column;
+        }
+
+        .list-item {
+            background: #ffffff;
+            padding: 20px;
+            border-radius: 18px;
+            margin-bottom: 15px;
+            border: 1px solid #e9ecef;
+            box-shadow: 0 4px 15px rgba(0,0,0,0.05);
+            display: flex;
+            align-items: center;
+            justify-content: space-between;
+        }
+
+        .item-content {
+            flex: 1;
+        }
+
+        .item-title {
+            font-size: 16px;
+            font-weight: 700;
+            color: #000000;
+            margin-bottom: 6px;
+        }
+
+        .item-meta {
+            font-size: 13px;
+            color: #666666;
+            font-weight: 600;
+        }
+
+        .item-actions {
+            display: flex;
+            gap: 8px;
+        }
+
+        .action-btn {
+            width: 35px;
+            height: 35px;
+            border: none;
+            border-radius: 8px;
+            cursor: pointer;
+            font-size: 14px;
+            transition: all 0.3s ease;
+            box-shadow: 0 3px 10px rgba(0,0,0,0.1);
+            display: flex;
+            align-items: center;
+            justify-content: center;
+        }
+
+        .action-btn.start {
+            background: linear-gradient(135deg, #d4af37 0%, #b8860b 100%);
+            color: white;
+        }
+
+        .action-btn.edit {
+            background: linear-gradient(135deg, #d4af37 0%, #b8860b 100%);
+            color: white;
+        }
+
+        .action-btn.delete {
+            background: linear-gradient(135deg, #000000 0%, #333333 100%);
+            color: white;
+        }
+
+        .action-btn.convert {
+            background: linear-gradient(135deg, #d4af37 0%, #b8860b 100%);
+            color: white;
+        }
+
+        /* 타이머 */
+        .timer-container {
+            text-align: center;
+            padding: 20px;
+        }
+
+        /* 모바일 최적화된 타이머 정보 카드 */
+        .timer-info-cards {
+            display: flex;
+            gap: 12px;
+            margin-bottom: 25px;
+            justify-content: center;
+        }
+
+        .info-card {
+            background: linear-gradient(135deg, #ffffff 0%, #f8f9fa 100%);
+            border-radius: 16px;
+            padding: 16px;
+            flex: 1;
+            max-width: 160px;
+            border: 2px solid #e9ecef;
+            box-shadow: 0 4px 15px rgba(0,0,0,0.08);
+            display: flex;
+            align-items: center;
+            gap: 12px;
+        }
+
+        .earning-card {
+            border-color: #d4af37;
+            background: linear-gradient(135deg, #fff8e1 0%, #ffffff 100%);
+        }
+
+        .loss-card {
+            border-color: #dc3545;
+            background: linear-gradient(135deg, #ffe5e7 0%, #ffffff 100%);
+        }
+
+        .card-icon {
+            font-size: 20px;
+            width: 32px;
+            text-align: center;
+        }
+
+        .card-content {
+            flex: 1;
+        }
+
+        .card-label {
+            font-size: 11px;
+            font-weight: 700;
+            color: #666666;
+            margin-bottom: 4px;
+            text-transform: uppercase;
+            letter-spacing: 0.5px;
+        }
+
+        .card-amount {
+            font-size: 18px;
+            font-weight: 800;
+            color: #d4af37;
+            line-height: 1;
+        }
+
+        .loss-card .card-amount { color: #dc3545; }
+
+        /* 데스크톱용 숨김 */
+        .desktop-only {
+            display: block;
+        }
+
+        .timer-circle {
+            width: 300px;
+            height: 300px;
+            margin: 0 auto 30px;
+            position: relative;
+        }
+
+        .timer-circle svg {
+            width: 100%;
+            height: 100%;
+            transform: rotate(-90deg);
+        }
+
+        .timer-circle .timer-bg {
+            fill: none;
+            stroke: #e9ecef;
+            stroke-width: 22;
+        }
+
+        .timer-circle .timer-progress {
+            fill: none;
+            stroke: url(#timerGradient);
+            stroke-width: 22;
+            stroke-linecap: round;
+            transition: stroke-dasharray 0.1s linear;
+        }
+
+        .timer-display {
+            position: absolute;
+            top: 50%;
+            left: 50%;
+            transform: translate(-50%, -50%);
+            text-align: center;
+        }
+
+        .timer-time {
+            font-size: 42px;
+            font-weight: 800;
+            color: #000000;
+            line-height: 1;
+            margin-bottom: 8px;
+        }
+
+        .timer-task-name {
+            font-size: 14px;
+            color: #666666;
+            font-weight: 600;
+        }
+
+        .timer-controls {
+            display: flex;
+            justify-content: center;
+            gap: 25px;
+            margin-top: 30px;
+        }
+
+        .timer-btn {
+            width: 65px;
+            height: 65px;
+            border: none;
+            border-radius: 15px;
+            font-size: 20px;
+            cursor: pointer;
+            transition: all 0.3s ease;
+            box-shadow: 0 6px 20px rgba(0,0,0,0.15);
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            font-weight: 700;
+        }
+
+        .timer-btn.play-pause {
+            background: linear-gradient(135deg, #d4af37 0%, #b8860b 100%);
+            color: white;
+        }
+
+        .timer-btn.complete {
+            background: linear-gradient(135deg, #d4af37 0%, #b8860b 100%);
+            color: white;
+        }
+
+        .timer-btn.give-up {
+            background: linear-gradient(135deg, #000000 0%, #333333 100%);
+            color: white;
+        }
+
+        /* 돈 표시 */
+        .money-display {
+            background: linear-gradient(135deg, #ffffff 0%, #f8f9fa 100%);
+            padding: 25px;
+            border-radius: 20px;
+            margin-top: 25px;
+            text-align: center;
+            border: 2px solid #d4af37;
+            box-shadow: 0 8px 30px rgba(212,175,55,0.2);
+        }
+
+        .money-earning {
+            margin-bottom: 20px;
+        }
+
+        .money-amount {
+            font-size: 36px;
+            font-weight: 800;
+            color: #d4af37;
+            margin-bottom: 5px;
+        }
+
+        .money-status {
+            font-size: 14px;
+            color: #666666;
+            font-weight: 700;
+            text-transform: uppercase;
+            letter-spacing: 1px;
+        }
+
+        .money-loss { background: linear-gradient(135deg, #ffe5e7 0%, #ffd6da 100%); padding: 15px; border-radius: 12px; border: 1px solid #dc3545; }
+
+        .loss-label { font-size: 12px; color: #dc3545; font-weight: 700; margin-bottom: 5px; text-transform: uppercase; }
+
+        .loss-amount { font-size: 20px; font-weight: 800; color: #dc3545; }
+
+        /* 로직 설명 박스 */
+        .logic-explanation { background: #ffffff; padding: 20px; border-radius: 15px; margin-top: 20px; border: 1px solid #e9ecef; }
+
+        .logic-title {
+            font-size: 16px;
+            font-weight: 700;
+            color: #000000;
+            margin-bottom: 10px;
+        }
+
+        .logic-content {
+            font-size: 14px;
+            color: #666666;
+            line-height: 1.5;
+        }
+
+        /* 하단 네비게이션 */
+        .bottom-nav {
+            position: fixed;
+            bottom: 0;
+            left: 0;
+            right: 0;
+            width: 100%;
+            background: #ffffff;
+            border-top: 1px solid #eeeeee;
+            padding: 10px 0 18px 0;
+            display: flex;
+            justify-content: space-around;
+            z-index: 1000;
+        }
+
+        .nav-item {
+            flex: 1;
+            display: flex;
+            flex-direction: column;
+            align-items: center;
+            justify-content: center;
+            text-align: center;
+            padding: 8px 4px;
+            cursor: pointer;
+            transition: color 0.2s ease, transform 0.2s ease;
+        }
+
+        .nav-item.active {
+            transform: none;
+        }
+
+        .nav-icon {
+            font-size: 20px;
+            margin-bottom: 4px;
+            display: block;
+            color: #999999;
+            transition: color 0.2s ease, transform 0.2s ease;
+        }
+
+        .nav-item.active .nav-icon {
+            color: #d4af37;
+            transform: scale(1.05);
+        }
+
+        .nav-label {
+            font-size: 11px;
+            font-weight: 700;
+            color: #999999;
+            transition: color 0.2s ease;
+        }
+
+        .nav-item.active .nav-label {
+            color: #d4af37;
+        }
+
+        /* 반응형 */
+        @media (max-width: 768px) {
+            .timer-info-cards {
+                display: flex;
+            }
+            
+            .desktop-only {
+                display: none;
+            }
+            
+            .timer-circle {
+                width: 280px;
+                height: 280px;
+                margin-bottom: 20px;
+            }
+            
+            .timer-time {
+                font-size: 38px;
+            }
+        }
+
+        @media (min-width: 769px) {
+            .timer-info-cards {
+                display: none;
+            }
+            
+            .desktop-only {
+                display: block;
+            }
+        }
+
+        @media (max-width: 375px) {
+            .timer-circle {
+                width: 250px;
+                height: 250px;
+            }
+            
+            .timer-time {
+                font-size: 32px;
+            }
+            
+            .info-card {
+                padding: 12px;
+                max-width: 140px;
+            }
+            
+            .card-amount {
+                font-size: 16px;
+            }
+        }
+
+        /* 애니메이션 */
+        @keyframes pulse {
+            0%, 100% { transform: scale(1); }
+            50% { transform: scale(1.03); }
+        }
+
+        .pulse {
+            animation: pulse 2s ease-in-out infinite;
+        }
+
+        @keyframes shake {
+            0%, 100% { transform: translateX(0); }
+            25% { transform: translateX(-3px); }
+            75% { transform: translateX(3px); }
+        }
+
+        .shake {
+            animation: shake 0.5s ease-in-out;
+        }
+
+        /* 설정 메뉴 오버레이 */
+        .settings-overlay {
+            position: fixed;
+            top: 0;
+            left: 0;
+            right: 0;
+            bottom: 0;
+            background: rgba(0,0,0,0.5);
+            z-index: 2000;
+            display: none;
+            animation: fadeIn 0.3s ease;
+        }
+
+        .settings-panel {
+            position: absolute;
+            top: 50%;
+            left: 50%;
+            transform: translate(-50%, -50%);
+            background: #ffffff;
+            border-radius: 20px;
+            padding: 30px;
+            width: 90%;
+            max-width: 400px;
+            max-height: 80vh;
+            overflow-y: auto;
+            box-shadow: 0 20px 50px rgba(0,0,0,0.3);
+        }
+
+        .settings-header {
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+            margin-bottom: 25px;
+        }
+
+        .settings-title {
+            font-size: 20px;
+            font-weight: 800;
+            color: #000000;
+        }
+
+        .close-btn {
+            width: 30px;
+            height: 30px;
+            border: none;
+            background: #f8f9fa;
+            border-radius: 50%;
+            color: #666666;
+            cursor: pointer;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+        }
+
+        .setting-item {
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+            padding: 15px 0;
+            border-bottom: 1px solid #e9ecef;
+        }
+
+        .setting-item:last-child {
+            border-bottom: none;
+        }
+
+        .setting-info {
+            flex: 1;
+        }
+
+        .setting-label {
+            font-size: 15px;
+            font-weight: 600;
+            color: #000000;
+            margin-bottom: 4px;
+        }
+
+        .setting-desc {
+            font-size: 12px;
+            color: #666666;
+        }
+
+        .toggle-switch {
+            position: relative;
+            width: 50px;
+            height: 28px;
+            background: #e9ecef;
+            border-radius: 14px;
+            cursor: pointer;
+            transition: background 0.3s ease;
+        }
+
+        .toggle-switch.active {
+            background: #d4af37;
+        }
+
+        .toggle-switch::after {
+            content: '';
+            position: absolute;
+            top: 3px;
+            left: 3px;
+            width: 22px;
+            height: 22px;
+            background: white;
+            border-radius: 50%;
+            transition: transform 0.3s ease;
+            box-shadow: 0 2px 6px rgba(0,0,0,0.2);
+        }
+
+        .toggle-switch.active::after {
+            transform: translateX(22px);
+        }
+
+        .motivation-banner {
+            background: linear-gradient(135deg, #fff8e1 0%, #f3e5f5 100%);
+            padding: 20px;
+            border-radius: 15px;
+            margin-top: 20px;
+            border: 2px solid #d4af37;
+            text-align: center;
+            display: none;
+        }
+
+        .banner-title {
+            font-size: 16px;
+            font-weight: 700;
+            color: #000000;
+            margin-bottom: 8px;
+        }
+
+        .banner-subtitle {
+            font-size: 11px;
+            color: #999999;
+            margin-bottom: 10px;
+            line-height: 1.3;
+        }
+        
+        /* 보고서 모달 */
+        .report-overlay {
+            position: fixed;
+            top: 0;
+            left: 0;
+            right: 0;
+            bottom: 0;
+            background: rgba(0,0,0,0.5);
+            z-index: 2100;
+            display: none;
+            animation: fadeIn 0.3s ease;
+        }
+
+        .report-modal {
+            position: absolute;
+            top: 50%;
+            left: 50%;
+            transform: translate(-50%, -50%);
+            background: #ffffff;
+            border-radius: 20px;
+            padding: 24px;
+            width: 92%;
+            max-width: 420px;
+            max-height: 80vh;
+            overflow-y: auto;
+            box-shadow: 0 20px 50px rgba(0,0,0,0.3);
+            border: 2px solid #d4af37;
+        }
+
+        .report-header {
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+            margin-bottom: 16px;
+        }
+
+        .report-title {
+            font-size: 18px;
+            font-weight: 800;
+            color: #000000;
+        }
+
+        .report-stats {
+            display: grid;
+            grid-template-columns: 1fr 1fr 1fr;
+            gap: 10px;
+            margin-bottom: 16px;
+        }
+
+        .report-item {
+            background: #ffffff;
+            border: 1px solid #e9ecef;
+            border-radius: 12px;
+            padding: 12px;
+            text-align: center;
+        }
+
+        .report-item .label {
+            font-size: 11px;
+            color: #666666;
+            font-weight: 700;
+            margin-bottom: 6px;
+            text-transform: uppercase;
+            letter-spacing: 0.3px;
+        }
+
+        .report-item .value {
+            font-size: 16px;
+            font-weight: 800;
+            color: #000000;
+        }
+
+        .report-item.gold .value { color: #d4af37; }
+        .report-item.black .value { color: #000000; }
+
+        .report-message {
+            background: linear-gradient(135deg, #fff3cd 0%, #ffeaa7 100%);
+            border: 1px solid rgba(255,193,7,0.3);
+            border-radius: 12px;
+            padding: 12px;
+            font-size: 13px;
+            color: #856404;
+            font-weight: 600;
+            text-align: center;
+            margin-bottom: 14px;
+        }
+
+        .report-chart {
+            background: linear-gradient(135deg, #f8f9fa 0%, #ffffff 100%);
+            border: 1px solid #e9ecef;
+            border-radius: 12px;
+            padding: 12px;
+            margin-bottom: 14px;
+        }
+
+        .chart-row { display: flex; align-items: center; margin-bottom: 8px; }
+        .chart-row:last-child { margin-bottom: 0; }
+        .chart-label { width: 60px; font-size: 12px; color: #666; font-weight: 700; }
+        .chart-track { flex: 1; height: 10px; background: #eeeeee; border-radius: 6px; overflow: hidden; }
+        .chart-fill { height: 100%; border-radius: 6px; }
+        .chart-fill.gold { background: linear-gradient(90deg, #d4af37, #b8860b); }
+        .chart-fill.black { background: #000000; }
+
+        .report-actions { display: flex; gap: 10px; }
+        .report-actions .btn { flex: 1; }
+
+        .banner-cta {
+            background: linear-gradient(135deg, #d4af37 0%, #b8860b 100%);
+            color: white;
+            border: none;
+            padding: 12px 24px;
+            border-radius: 12px;
+            font-size: 14px;
+            font-weight: 700;
+            cursor: pointer;
+            text-decoration: none;
+            display: inline-block;
+            transition: all 0.3s ease;
+        }
+
+        .banner-cta:hover {
+            transform: translateY(-2px);
+            box-shadow: 0 6px 20px rgba(212,175,55,0.4);
+        }
+
+        /* 심플 성취 시스템 */
+        .simple-achievements {
+            background: linear-gradient(135deg, #f8f9fa 0%, #ffffff 100%);
+            padding: 20px;
+            border-radius: 15px;
+            margin-top: 15px;
+            border: 1px solid #e9ecef;
+        }
+
+        .achievement-item {
+            display: flex;
+            align-items: center;
+            margin-bottom: 12px;
+            padding: 8px 0;
+        }
+
+        .achievement-item:last-child {
+            margin-bottom: 0;
+        }
+
+        .achievement-icon {
+            font-size: 18px;
+            margin-right: 12px;
+            width: 24px;
+            text-align: center;
+        }
+
+        .achievement-text {
+            font-size: 14px;
+            color: #666666;
+            font-weight: 500;
+        }
+
+        .achievement-text strong {
+            color: #d4af37;
+            font-weight: 800;
+        }
+
+        /* 오늘의 동기부여 */
+        .daily-motivation {
+            background: linear-gradient(135deg, #fff3cd 0%, #ffeaa7 100%);
+            padding: 15px;
+            border-radius: 12px;
+            margin-top: 15px;
+            text-align: center;
+            border: 1px solid rgba(255,193,7,0.3);
+        }
+
+        .motivation-text {
+            font-size: 14px;
+            font-weight: 600;
+            color: #856404;
+        }
+
+        /* 공유 버튼 */
+        .share-btn {
+            width: 100%;
+            background: linear-gradient(135deg, #28a745 0%, #20c997 100%);
+            color: white;
+            border: none;
+            padding: 15px;
+            border-radius: 12px;
+            font-size: 14px;
+            font-weight: 700;
+            margin-top: 15px;
+            cursor: pointer;
+            transition: all 0.3s ease;
+            box-shadow: 0 4px 15px rgba(40,167,69,0.3);
+        }
+
+        .share-btn:hover {
+            transform: translateY(-2px);
+            box-shadow: 0 6px 20px rgba(40,167,69,0.4);
+        }
+
+        /* 오늘의 미션 */
+        .daily-mission {
+            background: linear-gradient(135deg, #e8f5e8 0%, #f0fff0 100%);
+            padding: 15px;
+            border-radius: 12px;
+            margin-top: 15px;
+            border: 1px solid rgba(40,167,69,0.2);
+        }
+
+        .mission-header {
+            display: flex;
+            align-items: center;
+            margin-bottom: 8px;
+        }
+
+        .mission-icon {
+            font-size: 16px;
+            margin-right: 8px;
+        }
+
+        .mission-title {
+            font-size: 14px;
+            font-weight: 700;
+            color: #2d5016;
+        }
+
+        .mission-content {
+            font-size: 13px;
+            color: #4a7c59;
+            font-weight: 600;
+            padding-left: 24px;
+        }
+
+        /* 숨김 처리 */
+        .hidden {
+            display: none !important;
+        }
+
+        @keyframes fadeIn {
+            from { opacity: 0; }
+            to { opacity: 1; }
+        }
+    </style>
+        <!-- 확장 팝업에서는 inline 스크립트가 차단될 수 있어 제거 -->
+
+<style>
+body{display:flex;justify-content:center;background:linear-gradient(#ffffff,#f8f8f8)}
+.app-container,.container,main{max-width:600px;width:100%;margin:0 auto}
+.header,header,.bottom-nav,footer{max-width:600px;margin:0 auto}
+@media (max-width:420px){.header,header,.container,.content,main{padding-left:12px !important;padding-right:12px !important}}
+</style>
+
+</head>
+<body>
+    <div class="app-container">
+        <!-- 헤더 -->
+        <div class="header">
+            <div class="header-left">
+                <h1>천억부자 타이머</h1>
+                <a href="https://subad.kr?utm_source=billionaire_timer&placement=header" target="_blank" class="subad-badge">subad.kr</a>
+            </div>
+            <div class="header-center">
+                <div class="header-status">
+                    <span class="header-pill gold" id="header-net">순익 ₩0</span>
+                    <span class="header-pill" id="header-streak">연속 0일</span>
+                </div>
+            </div>
+            <button class="menu-btn" id="menu-btn">
+                <span class="icon icon-menu"></span>
+            </button>
+        </div>
+
+        <!-- 메인 콘텐츠 -->
+        <div class="main-content">
+            <!-- 목표 설정 탭 -->
+            <div class="tab-content active" id="goals-tab">
+                <!-- 초기 설정 화면 -->
+                <div class="goal-setup" id="goal-setup">
+                    <div class="setup-header">
+                        <button class="back-btn hidden" id="back-to-goal" onclick="showGoalDisplay()">
+                            <span class="icon">←</span>
+                            뒤로
+                        </button>
+                        <h2 class="setup-title">목표 설정</h2>
+                    </div>
+                    <p class="setup-subtitle">성공을 위한 첫 걸음,<br>당신의 시급 목표를 설정하세요</p>
+                    
+                    <div class="goal-input-section">
+                        <div class="input-group">
+                            <label>현재 시급</label>
+                            <div class="currency-symbol">
+                                <input type="number" id="current-hourly-input" placeholder="15000" min="0">
+                            </div>
+                        </div>
+                        
+                        <div class="input-group">
+                            <label>목표 시급</label>
+                            <div class="currency-symbol">
+                                <input type="number" id="target-hourly-input" placeholder="100000" min="0">
+                            </div>
+                        </div>
+                        
+                        <div class="conversion-display" id="conversion-display" style="display: none;">
+                            <div class="conversion-grid">
+                                <div class="conversion-card current">
+                                    <div class="conversion-label">현재 월급</div>
+                                    <div class="conversion-value current" id="current-monthly">₩0</div>
+                                    <div class="conversion-delta" id="current-monthly-delta">22일 8시간</div>
+                                </div>
+                                <div class="conversion-card target">
+                                    <div class="conversion-label">목표 월급</div>
+                                    <div class="conversion-value" id="target-monthly">₩0</div>
+                                    <div class="conversion-delta" id="target-monthly-delta">+0%</div>
+                                </div>
+                                <div class="conversion-card current">
+                                    <div class="conversion-label">현재 연봉</div>
+                                    <div class="conversion-value current" id="current-yearly">₩0</div>
+                                    <div class="conversion-delta" id="current-yearly-delta">예상 수입</div>
+                                </div>
+                                <div class="conversion-card target">
+                                    <div class="conversion-label">목표 연봉</div>
+                                    <div class="conversion-value" id="target-yearly">₩0</div>
+                                    <div class="conversion-delta" id="target-yearly-delta">+0%</div>
+                                </div>
+                            </div>
+                            <div class="daily-focus-card">
+                                <div class="daily-focus-title">하루 목표 집중 시간</div>
+                                <div class="daily-focus-time" id="daily-focus-time">0분</div>
+                                <div class="daily-focus-subtitle">목표 달성을 위한 최소 시간 (집중효율 70%)</div>
+                            </div>
+                        </div>
+                        
+                        <button class="gold-button" id="start-journey">천억 여정 시작하기</button>
+                        
+                        <!-- 첫 목표 설정용 CTA -->
+                        <div class="motivation-banner" style="display: block; margin-top: 20px;">
+                            <div class="banner-title">🚀 목표 달성 후 더 큰 성공을 원한다면?</div>
+                            <div class="banner-subtitle">이미 1,148만원 추가 매출을 달성한<br>검증된 수익화 노하우를 확인해보세요</div>
+                            <a href="https://class.subad.kr?utm_source=billionaire_timer&course=1148man&placement=goal_setup" target="_blank" class="banner-cta">
+                                💰 수익화 비법 확인하기
+                            </a>
+                        </div>
+                    </div>
+                </div>
+
+                <!-- 목표 표시 화면 -->
+                <div class="goal-display hidden" id="goal-display">
+                    <div class="goal-header">
+                        <h2>나의 목표</h2>
+                        <div class="goal-actions">
+                            <button class="edit-btn" id="show-report">
+                                <span class="icon icon-report"></span>
+                                보고서
+                            </button>
+                            <button class="edit-btn" id="edit-goals">
+                                <span class="icon icon-edit"></span>
+                                수정
+                            </button>
+                            <button class="reset-btn" id="reset-goals">
+                                <span class="icon icon-cancel"></span>
+                                초기화
+                            </button>
+                        </div>
+                    </div>
+                    
+                    <div class="goal-grid">
+                        <div class="goal-item">
+                            <div class="goal-label">현재 시급</div>
+                            <div class="goal-value" id="current-rate-display">₩0</div>
+                            <div class="goal-amount" id="current-monthly-goal">월 ₩0</div>
+                        </div>
+                        <div class="goal-item">
+                            <div class="goal-label">목표 시급</div>
+                            <div class="goal-value" id="target-rate-display">₩0</div>
+                            <div class="goal-amount" id="target-monthly-goal">월 ₩0</div>
+                        </div>
+                    </div>
+                    
+                    <div class="progress-section">
+                        <div class="progress-circle">
+                            <svg viewBox="0 0 140 140">
+                                <defs>
+                                    <linearGradient id="goldGradient" x1="0%" y1="0%" x2="100%" y2="100%">
+                                        <stop offset="0%" style="stop-color:#d4af37"/>
+                                        <stop offset="50%" style="stop-color:#b8860b"/>
+                                        <stop offset="100%" style="stop-color:#daa520"/>
+                                    </linearGradient>
+                                </defs>
+                                <circle class="bg-circle" cx="70" cy="70" r="60"/>
+                                <circle class="progress-circle-fill" cx="70" cy="70" r="60" id="progress-circle"/>
+                            </svg>
+                            <div class="progress-text" id="progress-percentage">0%</div>
+                        </div>
+                        <p style="color: #666666; font-size: 14px; font-weight: 600;">목표 달성률</p>
+                    </div>
+                    
+                    <!-- 심플한 성과 통계 -->
+                    <div class="profit-loss-stats">
+                        <div class="stats-grid">
+                            <div class="stat-item profit">
+                                <div class="stat-label">성공 수익</div>
+                                <div class="stat-value profit-color" id="total-profit">₩0</div>
+                            </div>
+                            <div class="stat-item loss">
+                                <div class="stat-label">실패 손해</div>
+                                <div class="stat-value loss-color" id="total-loss">₩0</div>
+                            </div>
+                        </div>
+                        
+                        <!-- 심플 달성 현황 -->
+                        <div class="simple-achievements">
+                            <div class="achievement-item">
+                                <span class="achievement-icon">🔥</span>
+                                <span class="achievement-text">연속 <strong id="current-streak">0</strong>일 달성</span>
+                            </div>
+                            <div class="achievement-item">
+                                <span class="achievement-icon">📅</span>
+                                <span class="achievement-text">이번 주 <strong id="week-tasks">0</strong>개 완료</span>
+                            </div>
+                            <div class="achievement-item">
+                                <span class="achievement-icon">🏆</span>
+                                <span class="achievement-text">총 <strong id="total-completed">0</strong>개 달성</span>
+                            </div>
+                        </div>
+                        
+                        <!-- 오늘의 동기부여 -->
+                        <div class="daily-motivation" id="daily-motivation">
+                            <div class="motivation-text">💪 오늘도 목표를 향해 한 걸음!</div>
+                        </div>
+                        
+                        <!-- 오늘의 미션 -->
+                        <div class="daily-mission" id="daily-mission">
+                            <div class="mission-header">
+                                <span class="mission-icon">🎯</span>
+                                <span class="mission-title">오늘의 미션</span>
+                            </div>
+                            <div class="mission-content" id="mission-content">
+                                첫 번째 작업을 30분 이내에 완료하기
+                            </div>
+                        </div>
+                        
+                        <!-- 간단한 공유 버튼 -->
+                        <button class="share-btn" id="share-progress" onclick="shareProgress()">
+                            📤 성과 공유하기
+                        </button>
+                    </div>
+                    
+                    <!-- 성장 동기 배너 -->
+                    <div class="motivation-banner" id="goal-motivation-banner">
+                        <div class="banner-title">🚀 추가 매출 1,148만원 달성 비법</div>
+                        <div class="banner-subtitle">천억부자들의 실제 성장 전략과<br>검증된 수익화 노하우를 배워보세요</div>
+                        <a href="https://class.subad.kr?utm_source=billionaire_timer&course=1148man" target="_blank" class="banner-cta">
+                            수익화 강의 보기
+                        </a>
+                    </div>
+                </div>
+            </div>
+
+            <!-- 할 일 탭 -->
+            <div class="tab-content" id="todos-tab">
+                <div class="section-header">
+                    <h2>천억 할 일</h2>
+                    <button class="add-btn" id="add-todo">
+                        <span class="icon icon-plus"></span>
+                    </button>
+                </div>
+                
+                <div class="input-form" id="todo-form">
+                    <div class="input-group">
+                        <label>할 일</label>
+                        <input type="text" id="todo-title" placeholder="할 일을 입력하세요">
+                    </div>
+                    <div class="input-group">
+                        <label>가치 금액(선택)</label>
+                        <div class="currency-symbol">
+                            <input type="number" id="todo-value" placeholder="직접 금액 입력, 미입력 시 시급 계산" min="0">
+                        </div>
+                    </div>
+                    <div class="time-selector">
+                        <div class="time-display" id="todo-time-display">30분</div>
+                        <div class="time-chips">
+                            <div class="option-btn" data-time="15">15분</div>
+                            <div class="option-btn selected" data-time="30">30분</div>
+                            <div class="option-btn" data-time="45">45분</div>
+                            <div class="option-btn" data-time="60">60분</div>
+                        </div>
+                        <div class="time-slider-container">
+                            <input type="range" class="time-slider" id="todo-time-slider" min="5" max="60" step="5" value="30">
+                        </div>
+                        <div class="money-preview" id="todo-money-preview">예상 수익 ₩0 / 예상 손실 ₩0</div>
+                    </div>
+                    <div class="repeat-selector">
+                        <div class="option-btn selected" data-repeat="once">한번만</div>
+                        <div class="option-btn" data-repeat="daily">매일 반복</div>
+                    </div>
+                    <div class="input-group" style="margin-top:10px;">
+                        <label style="display:flex; align-items:center; gap:8px; justify-content:center;">
+                            <input type="checkbox" id="todo-quick-complete" style="width:18px; height:18px;"> 체크로 완료 허용
+                        </label>
+                    </div>
+                    <div class="btn-group">
+                        <button class="btn primary" id="save-todo">
+                            <span class="icon icon-save"></span>
+                            저장
+                        </button>
+                        <button class="btn secondary" id="cancel-todo">
+                            <span class="icon icon-cancel"></span>
+                            취소
+                        </button>
+                    </div>
+                </div>
+                
+                <div class="item-list" id="todo-list">
+                    <!-- 할 일 목록 -->
+                </div>
+            </div>
+
+            <!-- 타이머 탭 -->
+            <div class="tab-content" id="timer-tab">
+                <div class="timer-container">
+                    <!-- 모바일 최적화된 상단 정보 영역 -->
+                    <div class="timer-info-cards">
+                        <div class="info-card earning-card">
+                            <div class="card-icon">💰</div>
+                            <div class="card-content">
+                                <div class="card-label">벌어들이는 중</div>
+                                <div class="card-amount pulse" id="mobile-earning">₩0</div>
+                            </div>
+                        </div>
+                        <div class="info-card loss-card" id="mobile-loss-card" style="display: none;">
+                            <div class="card-icon">⚠️</div>
+                            <div class="card-content">
+                                <div class="card-label">집중 안하면</div>
+                                <div class="card-amount" id="mobile-loss">₩0 손해</div>
+                            </div>
+                        </div>
+                    </div>
+
+                    <div class="timer-circle">
+                        <svg viewBox="0 0 300 300">
+                            <defs>
+                                <linearGradient id="timerGradient" x1="0%" y1="0%" x2="100%" y2="100%">
+                                    <stop offset="0%" style="stop-color:#d4af37"/>
+                                    <stop offset="50%" style="stop-color:#b8860b"/>
+                                    <stop offset="100%" style="stop-color:#daa520"/>
+                                </linearGradient>
+                            </defs>
+                            <circle class="timer-bg" cx="150" cy="150" r="135"/>
+                            <circle class="timer-progress" cx="150" cy="150" r="135" id="timer-progress"/>
+                        </svg>
+                        <div class="timer-display">
+                            <div class="timer-time" id="timer-time">00:00</div>
+                            <div class="timer-task-name" id="timer-task">작업을 선택하세요</div>
+                        </div>
+                    </div>
+                    
+                    <div class="timer-controls">
+                        <button class="timer-btn play-pause" id="play-pause-btn">
+                            <span class="icon icon-play"></span>
+                        </button>
+                        <button class="timer-btn complete" id="complete-btn">
+                            <span class="icon icon-complete"></span>
+                        </button>
+                        <button class="timer-btn give-up" id="give-up-btn">
+                            <span class="icon icon-give-up"></span>
+                        </button>
+                    </div>
+                    
+                    <!-- 기존 money-display는 데스크톱용으로 유지 -->
+                    <div class="money-display desktop-only">
+                        <div class="money-earning">
+                            <div class="money-amount pulse" id="money-amount">₩0</div>
+                            <div class="money-status" id="money-status">대기 중</div>
+                        </div>
+                        <div class="money-loss" id="money-loss" style="display: none;">
+                            <div class="loss-label">집중하지 않으면</div>
+                            <div class="loss-amount" id="loss-amount">₩0 손해</div>
+                        </div>
+                    </div>
+                    
+                    <!-- 이익/손해 로직 설명 -->
+                    <div class="logic-explanation">
+                        <div class="logic-title">이익/손해 계산 로직</div>
+                        <div class="logic-content">
+                            <strong>이익:</strong> 현재 시급 × 작업 시간<br>
+                            <strong>손해:</strong> 목표 시급 × 작업 시간<br>
+                            <strong>완료:</strong> 수익 기록 + 성공일 증가<br>
+                            <strong>포기:</strong> 손해 기록 + 실패일 증가
+                        </div>
+                    </div>
+                </div>
+            </div>
+
+            <!-- 아이디어 탭 -->
+            <div class="tab-content" id="ideas-tab">
+                <div class="section-header">
+                    <h2>천억 아이디어</h2>
+                    <button class="add-btn" id="add-idea">
+                        <span class="icon icon-plus"></span>
+                    </button>
+                </div>
+                
+                <div class="input-form" id="idea-form">
+                    <div class="input-group">
+                        <label>아이디어 제목</label>
+                        <input type="text" id="idea-title" placeholder="아이디어 제목">
+                    </div>
+                    <div class="input-group">
+                        <label>아이디어 내용</label>
+                        <textarea id="idea-content" placeholder="아이디어를 자세히 적어보세요..."></textarea>
+                    </div>
+                    <div class="btn-group">
+                        <button class="btn primary" id="save-idea">
+                            <span class="icon icon-save"></span>
+                            저장
+                        </button>
+                        <button class="btn secondary" id="cancel-idea">
+                            <span class="icon icon-cancel"></span>
+                            취소
+                        </button>
+                    </div>
+                </div>
+                
+                <!-- 아이디어 → 할일 변환 폼 -->
+                <div class="input-form" id="convert-form">
+                    <div class="input-group">
+                        <label>할 일 제목</label>
+                        <input type="text" id="convert-title" placeholder="할 일 제목">
+                    </div>
+                    <div class="input-group">
+                        <label>가치 금액(선택)</label>
+                        <div class="currency-symbol">
+                            <input type="number" id="convert-value" placeholder="직접 금액 입력, 미입력 시 시급 계산" min="0">
+                        </div>
+                    </div>
+                    <div class="time-selector">
+                        <div class="time-display" id="convert-time-display">30분</div>
+                        <div class="time-chips">
+                            <div class="option-btn" data-time="15">15분</div>
+                            <div class="option-btn selected" data-time="30">30분</div>
+                            <div class="option-btn" data-time="45">45분</div>
+                            <div class="option-btn" data-time="60">60분</div>
+                        </div>
+                        <div class="time-slider-container">
+                            <input type="range" class="time-slider" id="convert-time-slider" min="5" max="60" step="5" value="30">
+                        </div>
+                        <div class="money-preview" id="convert-money-preview">예상 수익 ₩0 / 예상 손실 ₩0</div>
+                    </div>
+                    <div class="repeat-selector">
+                        <div class="option-btn selected" data-repeat="once">한번만</div>
+                        <div class="option-btn" data-repeat="daily">매일 반복</div>
+                    </div>
+                    <div class="input-group" style="margin-top:10px;">
+                        <label style="display:flex; align-items:center; gap:8px; justify-content:center;">
+                            <input type="checkbox" id="convert-quick-complete" style="width:18px; height:18px;"> 체크로 완료 허용
+                        </label>
+                    </div>
+                    <div class="btn-group">
+                        <button class="btn primary" id="confirm-convert">
+                            <span class="icon icon-convert"></span>
+                            할일로 변환
+                        </button>
+                        <button class="btn secondary" id="cancel-convert">
+                            <span class="icon icon-cancel"></span>
+                            취소
+                        </button>
+                    </div>
+                </div>
+                
+                <div class="item-list" id="ideas-list">
+                    <!-- 아이디어 목록 -->
+                </div>
+            </div>
+        </div>
+
+        <!-- 하단 네비게이션 -->
+        <div class="bottom-nav">
+            <div class="nav-item active" data-tab="goals-tab">
+                <span class="nav-icon icon icon-target"></span>
+                <span class="nav-label">목표</span>
+            </div>
+            <div class="nav-item" data-tab="todos-tab">
+                <span class="nav-icon icon icon-list"></span>
+                <span class="nav-label">할일</span>
+            </div>
+            <div class="nav-item" data-tab="timer-tab">
+                <span class="nav-icon icon icon-timer"></span>
+                <span class="nav-label">타이머</span>
+            </div>
+            <div class="nav-item" data-tab="ideas-tab">
+                <span class="nav-icon icon icon-bulb"></span>
+                <span class="nav-label">아이디어</span>
+            </div>
+        </div>
+
+        <!-- 설정 메뉴 오버레이 -->
+        <div class="settings-overlay" id="settings-overlay">
+            <div class="settings-panel">
+                <div class="settings-header">
+                    <h2 class="settings-title">설정</h2>
+                    <button class="close-btn" id="close-settings">
+                        <span class="icon icon-close"></span>
+                    </button>
+                </div>
+                
+                <div class="setting-item">
+                    <div class="setting-info">
+                        <div class="setting-label">손실 표시</div>
+                        <div class="setting-desc">집중하지 않을 때 기회비용 표시</div>
+                    </div>
+                    <div class="toggle-switch active" data-setting="showLoss"></div>
+                </div>
+                
+                <div class="setting-item">
+                    <div class="setting-info">
+                        <div class="setting-label">방해사이트 경고</div>
+                        <div class="setting-desc">다른 웹사이트 접속 시 경고</div>
+                    </div>
+                    <div class="toggle-switch active" data-setting="siteWarning"></div>
+                </div>
+                
+                <div class="setting-item">
+                    <div class="setting-info">
+                        <div class="setting-label">알림</div>
+                        <div class="setting-desc">30분 경과 및 시간 초과 알림</div>
+                    </div>
+                    <div class="toggle-switch active" data-setting="notifications"></div>
+                </div>
+                
+                <div class="setting-item">
+                    <div class="setting-info">
+                        <div class="setting-label">사운드/진동</div>
+                        <div class="setting-desc">완료/실패 시 소리 및 진동</div>
+                    </div>
+                    <div class="toggle-switch active" data-setting="sound"></div>
+                </div>
+                
+                <div class="setting-item">
+                    <div class="setting-info">
+                        <div class="setting-label">성장 동기 배너</div>
+                        <div class="setting-desc">추가 매출 강의 및 성장 콘텐츠</div>
+                    </div>
+                    <div class="toggle-switch active" data-setting="motivationBanner"></div>
+                </div>
+                
+                <div class="setting-item">
+                    <div class="setting-info">
+                        <div class="setting-label">자동 재배치</div>
+                        <div class="setting-desc">미완료 작업 내일 오전 10시 이동</div>
+                    </div>
+                    <div class="toggle-switch" data-setting="autoReschedule"></div>
+                </div>
+                
+                <!-- 설정 메뉴 마지막 CTA -->
+                <div style="margin-top: 30px; padding-top: 20px; border-top: 1px solid #e9ecef;">
+                    <div style="text-align: center; margin-bottom: 15px;">
+                        <h3 style="font-size: 16px; font-weight: 700; color: #000; margin-bottom: 8px;">💡 더 큰 성공을 원하시나요?</h3>
+                        <p style="font-size: 13px; color: #666; line-height: 1.4;">실제 1,148만원 추가 매출을 달성한<br>검증된 비즈니스 전략을 확인해보세요</p>
+                    </div>
+                    <a href="https://class.subad.kr?utm_source=billionaire_timer&course=1148man&placement=settings" target="_blank" 
+                       style="display: block; background: linear-gradient(135deg, #d4af37 0%, #b8860b 100%); color: white; text-decoration: none; padding: 12px 20px; border-radius: 12px; font-size: 14px; font-weight: 700; text-align: center;">
+                        🚀 수익화 강의 보러가기
+                    </a>
+                </div>
+            </div>
+        </div>
+
+        <!-- 보고서 모달 -->
+        <div class="report-overlay" id="report-overlay">
+            <div class="report-modal">
+                <div class="report-header">
+                    <div class="report-title">📊 성과 보고서</div>
+                    <button class="close-btn" id="close-report"><span class="icon icon-close"></span></button>
+                </div>
+
+                <div class="report-stats">
+                    <div class="report-item gold">
+                        <div class="label">총 수익</div>
+                        <div class="value" id="report-total-profit">₩0</div>
+                    </div>
+                    <div class="report-item black">
+                        <div class="label">총 손실</div>
+                        <div class="value" id="report-total-loss">₩0</div>
+                    </div>
+                    <div class="report-item">
+                        <div class="label">순수익</div>
+                        <div class="value" id="report-net-profit">₩0</div>
+                    </div>
+                </div>
+
+                <div class="report-message" id="report-message-text">오늘도 꾸준히 가봅시다! 🔥</div>
+
+                <div class="report-chart">
+                    <div class="chart-row">
+                        <div class="chart-label">수익</div>
+                        <div class="chart-track"><div class="chart-fill gold" id="chart-profit-fill" style="width:0%"></div></div>
+                    </div>
+                    <div class="chart-row">
+                        <div class="chart-label">손실</div>
+                        <div class="chart-track"><div class="chart-fill black" id="chart-loss-fill" style="width:0%"></div></div>
+                    </div>
+                    <div class="chart-row">
+                        <div class="chart-label">순익</div>
+                        <div class="chart-track"><div class="chart-fill gold" id="chart-net-fill" style="width:0%"></div></div>
+                    </div>
+                </div>
+
+                <div class="report-actions">
+                    <button class="btn secondary" id="motivate-more">동기부여</button>
+                    <button class="btn primary" id="share-report">성과 공유</button>
+                </div>
+            </div>
+        </div>
+
+    </div>
+
+    <script>
+        // 전역 변수
+        let appData = {
+            goals: { currentRate: 0, targetRate: 0 },
+            todos: [],
+            ideas: [],
+            stats: { 
+                totalProfit: 0, 
+                totalLoss: 0, 
+                successDays: 0, 
+                failDays: 0,
+                currentStreak: 0,
+                longestStreak: 0,
+                thisWeekTasks: 0,
+                totalTasks: 0,
+                lastActiveDate: null
+            },
+            timer: {
+                isRunning: false,
+                isPaused: false,
+                timeLeft: 0,
+                totalTime: 0,
+                currentTask: null,
+                interval: null
+            },
+            settings: {
+                showLoss: true,
+                siteWarning: true,
+                notifications: true,
+                sound: true,
+                motivationBanner: true,
+                autoReschedule: false,
+                focusEfficiency: 0.7
+            }
+        };
+
+        let editingTodoId = null;
+        let convertingIdeaId = null;
+
+        // 앱 초기화
+        document.addEventListener('DOMContentLoaded', function() {
+            loadAppData();
+            setupEventListeners();
+            initializeApp();
+        });
+
+        // 데이터 로드
+        function loadAppData() {
+            const savedData = localStorage.getItem('final_billionaire_app');
+            if (savedData) {
+                appData = { ...appData, ...JSON.parse(savedData) };
+            }
+        }
+
+        // 데이터 저장
+        function saveAppData() {
+            localStorage.setItem('final_billionaire_app', JSON.stringify(appData));
+        }
+
+        // 앱 초기화
+        function initializeApp() {
+            if (appData.goals.currentRate > 0 && appData.goals.targetRate > 0) {
+                showGoalDisplay();
+            } else {
+                showGoalSetup();
+            }
+            updateAllDisplays();
+        }
+
+        // 이벤트 리스너 설정
+        function setupEventListeners() {
+            // 네비게이션
+            document.querySelectorAll('.nav-item').forEach(item => {
+                item.addEventListener('click', function() {
+                    switchTab(this.dataset.tab);
+                });
+            });
+
+            // 목표 설정
+            document.getElementById('current-hourly-input').addEventListener('input', updateConversions);
+            document.getElementById('target-hourly-input').addEventListener('input', updateConversions);
+            document.getElementById('start-journey').addEventListener('click', saveGoalsAndStart);
+            document.getElementById('edit-goals').addEventListener('click', showGoalSetup);
+            document.getElementById('reset-goals').addEventListener('click', resetGoals);
+            document.getElementById('show-report').addEventListener('click', showReport);
+
+            // 할 일 관리
+            document.getElementById('add-todo').addEventListener('click', showTodoForm);
+            document.getElementById('save-todo').addEventListener('click', saveTodo);
+            document.getElementById('cancel-todo').addEventListener('click', hideTodoForm);
+
+            // 아이디어 관리
+            document.getElementById('add-idea').addEventListener('click', showIdeaForm);
+            document.getElementById('save-idea').addEventListener('click', saveIdea);
+            document.getElementById('cancel-idea').addEventListener('click', hideIdeaForm);
+
+            // 아이디어 → 할일 변환
+            document.getElementById('confirm-convert').addEventListener('click', confirmConvert);
+            document.getElementById('cancel-convert').addEventListener('click', cancelConvert);
+
+            // 설정 메뉴
+            document.getElementById('menu-btn').addEventListener('click', showSettings);
+            document.getElementById('close-settings').addEventListener('click', hideSettings);
+            document.getElementById('settings-overlay').addEventListener('click', function(e) {
+                if (e.target === this) {
+                    hideSettings();
+                }
+            });
+            document.getElementById('close-report').addEventListener('click', hideReport);
+            document.getElementById('report-overlay').addEventListener('click', function(e){
+                if (e.target === this) hideReport();
+            });
+            document.getElementById('share-report').addEventListener('click', shareReport);
+            document.getElementById('motivate-more').addEventListener('click', function(){
+                alert('당신의 페이스가 곧 성과입니다. 오늘 1개 더 완료해볼까요? 💪');
+            });
+            
+            // 설정 토글
+            document.querySelectorAll('.toggle-switch').forEach(toggle => {
+                toggle.addEventListener('click', function() {
+                    const setting = this.dataset.setting;
+                    appData.settings[setting] = !appData.settings[setting];
+                    this.classList.toggle('active', appData.settings[setting]);
+                    saveAppData();
+                    updateBannerVisibility();
+                });
+            });
+
+            // 시간 슬라이더 이벤트
+            document.getElementById('todo-time-slider').addEventListener('input', function() {
+                updateTimeDisplay('todo', this.value);
+            });
+            
+            document.getElementById('convert-time-slider').addEventListener('input', function() {
+                updateTimeDisplay('convert', this.value);
+            });
+
+            // 옵션 선택
+            document.addEventListener('click', function(e) {
+                if (e.target.classList.contains('option-btn')) {
+                    const parent = e.target.parentElement;
+                    parent.querySelectorAll('.option-btn').forEach(btn => btn.classList.remove('selected'));
+                    e.target.classList.add('selected');
+                    
+                    // 슬라이더 값도 업데이트
+                    const timeValue = e.target.dataset.time;
+                    const form = parent.closest('.input-form');
+                    if (timeValue && form) {
+                        const slider = form.querySelector('.time-slider');
+                        const display = form.querySelector('.time-display');
+                        if (slider) slider.value = timeValue;
+                        if (display) display.textContent = timeValue + '분';
+                        updateMoneyPreview(form);
+                    }
+                }
+            });
+
+            // 타이머 컨트롤
+            document.getElementById('play-pause-btn').addEventListener('click', toggleTimer);
+            document.getElementById('complete-btn').addEventListener('click', completeTimer);
+            document.getElementById('give-up-btn').addEventListener('click', giveUpTimer);
+        }
+
+        // 월급/연봉 자동 환산
+        function updateConversions() {
+            const currentRate = parseInt(document.getElementById('current-hourly-input').value) || 0;
+            const targetRate = parseInt(document.getElementById('target-hourly-input').value) || 0;
+
+            if (currentRate > 0 || targetRate > 0) {
+                document.getElementById('conversion-display').style.display = 'block';
+                
+                const currentMonthly = currentRate * 8 * 22;
+                const targetMonthly = targetRate * 8 * 22;
+                const currentYearly = currentMonthly * 12;
+                const targetYearly = targetMonthly * 12;
+
+                document.getElementById('current-monthly').textContent = `₩${currentMonthly.toLocaleString()}`;
+                document.getElementById('target-monthly').textContent = `₩${targetMonthly.toLocaleString()}`;
+                document.getElementById('current-yearly').textContent = `₩${currentYearly.toLocaleString()}`;
+                document.getElementById('target-yearly').textContent = `₩${targetYearly.toLocaleString()}`;
+                
+                // 퍼센트 차이 계산
+                if (currentMonthly > 0) {
+                    const monthlyDelta = ((targetMonthly - currentMonthly) / currentMonthly * 100).toFixed(1);
+                    const yearlyDelta = ((targetYearly - currentYearly) / currentYearly * 100).toFixed(1);
+                    
+                    document.getElementById('target-monthly-delta').textContent = `+${monthlyDelta}%`;
+                    document.getElementById('target-yearly-delta').textContent = `+${yearlyDelta}%`;
+                }
+                
+                // 하루 목표 집중 시간 계산
+                if (currentRate > 0 && targetRate > currentRate) {
+                    const dailyGap = (targetMonthly - currentMonthly) / 22; // 하루 격차
+                    const focusMinutes = Math.ceil((dailyGap / currentRate) * 60 / appData.settings.focusEfficiency);
+                    document.getElementById('daily-focus-time').textContent = `${focusMinutes}분`;
+                } else {
+                    document.getElementById('daily-focus-time').textContent = '0분';
+                }
+            } else {
+                document.getElementById('conversion-display').style.display = 'none';
+            }
+        }
+
+        // 목표 저장 및 시작
+        function saveGoalsAndStart() {
+            const currentRate = parseInt(document.getElementById('current-hourly-input').value) || 0;
+            const targetRate = parseInt(document.getElementById('target-hourly-input').value) || 0;
+
+            if (currentRate <= 0 || targetRate <= 0) {
+                alert('올바른 시급을 입력해주세요!');
+                return;
+            }
+
+            if (targetRate <= currentRate) {
+                alert('목표 시급이 현재 시급보다 높아야 합니다!');
+                return;
+            }
+
+            appData.goals.currentRate = currentRate;
+            appData.goals.targetRate = targetRate;
+            saveAppData();
+            
+            showGoalDisplay();
+            updateAllDisplays();
+        }
+
+        // 목표 설정/표시 화면 전환
+        function showGoalSetup() {
+            document.getElementById('goal-setup').classList.remove('hidden');
+            document.getElementById('goal-display').classList.add('hidden');
+            
+            // 기존 목표가 있으면 뒤로가기 버튼 표시
+            if (appData.goals.currentRate > 0 && appData.goals.targetRate > 0) {
+                document.getElementById('back-to-goal').classList.remove('hidden');
+            }
+            
+            if (appData.goals.currentRate > 0) {
+                document.getElementById('current-hourly-input').value = appData.goals.currentRate;
+            }
+            if (appData.goals.targetRate > 0) {
+                document.getElementById('target-hourly-input').value = appData.goals.targetRate;
+            }
+            updateConversions();
+        }
+
+        function showGoalDisplay() {
+            document.getElementById('goal-setup').classList.add('hidden');
+            document.getElementById('goal-display').classList.remove('hidden');
+            document.getElementById('back-to-goal').classList.add('hidden');
+        }
+
+        // 목표 초기화
+        function resetGoals() {
+            if (confirm('🚨 정말 목표를 초기화하시겠습니까?\n\n모든 통계와 기록이 삭제됩니다.\n이 작업은 되돌릴 수 없습니다.')) {
+                // 데이터 초기화
+                appData.goals = { currentRate: 0, targetRate: 0 };
+                appData.stats = { 
+                    totalProfit: 0, 
+                    totalLoss: 0, 
+                    successDays: 0, 
+                    failDays: 0,
+                    currentStreak: 0,
+                    longestStreak: 0,
+                    thisWeekTasks: 0,
+                    totalTasks: 0,
+                    lastActiveDate: null
+                };
+                appData.todos = [];
+                appData.ideas = [];
+                
+                // 배지 기록도 초기화
+                Object.keys(localStorage).forEach(key => {
+                    if (key.startsWith('badge_')) {
+                        localStorage.removeItem(key);
+                    }
+                });
+                
+                saveAppData();
+                showGoalSetup();
+                updateAllDisplays();
+                
+                alert('✅ 목표가 초기화되었습니다!\n새로운 도전을 시작해보세요! 💪');
+            }
+        }
+
+        // 모든 디스플레이 업데이트
+        function updateAllDisplays() {
+            updateGoalDisplay();
+            updateStatsDisplay();
+            renderTodos();
+            renderIdeas();
+            updateTimerDisplay();
+            updateMoneyDisplay();
+            updateBannerVisibility();
+            updateSettingsUI();
+            updateReportDisplay();
+            updateHeaderStatus();
+        }
+
+        function updateHeaderStatus() {
+            const net = (appData.stats.totalProfit || 0) - (appData.stats.totalLoss || 0);
+            const streak = appData.stats.currentStreak || 0;
+            const netEl = document.getElementById('header-net');
+            const streakEl = document.getElementById('header-streak');
+            if (netEl) netEl.textContent = `순익 ₩${net.toLocaleString()}`;
+            if (streakEl) streakEl.textContent = `연속 ${streak}일`;
+        }
+
+        // 목표 디스플레이 업데이트
+        function updateGoalDisplay() {
+            document.getElementById('current-rate-display').textContent = `₩${appData.goals.currentRate.toLocaleString()}`;
+            document.getElementById('target-rate-display').textContent = `₩${appData.goals.targetRate.toLocaleString()}`;
+
+            // 월급 정보 추가
+            const currentMonthly = appData.goals.currentRate * 8 * 22;
+            const targetMonthly = appData.goals.targetRate * 8 * 22;
+            
+            document.getElementById('current-monthly-goal').textContent = `월 ₩${currentMonthly.toLocaleString()}`;
+            document.getElementById('target-monthly-goal').textContent = `월 ₩${targetMonthly.toLocaleString()}`;
+
+            const progress = appData.goals.targetRate > 0 ? 
+                Math.min((appData.goals.currentRate / appData.goals.targetRate) * 100, 100) : 0;
+            
+            document.getElementById('progress-percentage').textContent = `${progress.toFixed(1)}%`;
+            updateProgressCircle(progress);
+        }
+
+        // 통계 디스플레이 업데이트
+        function updateStatsDisplay() {
+            document.getElementById('total-profit').textContent = `₩${appData.stats.totalProfit.toLocaleString()}`;
+            document.getElementById('total-loss').textContent = `₩${appData.stats.totalLoss.toLocaleString()}`;
+            document.getElementById('current-streak').textContent = appData.stats.currentStreak;
+            document.getElementById('week-tasks').textContent = appData.stats.thisWeekTasks;
+            document.getElementById('total-completed').textContent = appData.stats.totalTasks;
+            
+            updateDailyMotivation();
+            updateDailyMission();
+        }
+
+        // 오늘의 동기부여 메시지
+        function updateDailyMotivation() {
+            const messages = [
+                "💪 오늘도 목표를 향해 한 걸음!",
+                "🔥 연속 달성으로 습관을 만들어보세요!",
+                "⚡ 작은 실행이 큰 변화를 만듭니다!",
+                "🎯 집중하면 반드시 달성할 수 있어요!",
+                "🌟 어제보다 나은 오늘을 만들어가요!",
+                "💎 꾸준함이 가장 강력한 무기입니다!",
+                "🚀 목표 달성까지 계속 전진하세요!"
+            ];
+            
+            // 배지 시스템과 연동된 동기부여 메시지
+            if (appData.stats.currentStreak >= 30) {
+                document.querySelector('.motivation-text').textContent = `💎 ${appData.stats.currentStreak}일 연속! 다이아몬드 습관 달성!`;
+            } else if (appData.stats.currentStreak >= 7) {
+                document.querySelector('.motivation-text').textContent = `🏆 ${appData.stats.currentStreak}일 연속! 일주일 챌린지 성공!`;
+            } else if (appData.stats.currentStreak >= 3) {
+                document.querySelector('.motivation-text').textContent = `🔥 ${appData.stats.currentStreak}일 연속! 습관이 만들어지고 있어요!`;
+            } else {
+                const today = new Date().getDay();
+                document.querySelector('.motivation-text').textContent = messages[today];
+            }
+            
+            // 달성 시 배지 표시
+            showAchievementBadge();
+        }
+
+        // 간단한 배지 표시 시스템
+        function showAchievementBadge() {
+            const streak = appData.stats.currentStreak;
+            const total = appData.stats.totalTasks;
+            
+            // 첫 완료
+            if (total === 1) {
+                showBadgeNotification("🎉 첫 완료!", "첫 번째 작업을 완료했습니다!");
+            }
+            // 연속 배지
+            else if (streak === 3) {
+                showBadgeNotification("🔥 3일 연속!", "꾸준함의 힘이 시작되었습니다!");
+            }
+            else if (streak === 7) {
+                showBadgeNotification("🏆 일주일 달성!", "일주일 연속 달성! 대단해요!");
+            }
+            else if (streak === 30) {
+                showBadgeNotification("💎 한달 마스터!", "30일 연속 달성! 진정한 습관!");
+            }
+            // 총 완료 배지
+            else if (total === 10) {
+                showBadgeNotification("⭐ 10개 달성!", "총 10개 작업을 완료했습니다!");
+            }
+            else if (total === 50) {
+                showBadgeNotification("🌟 50개 달성!", "총 50개 작업 완료! 놀라워요!");
+            }
+            else if (total === 100) {
+                showBadgeNotification("👑 100개 달성!", "백전백승! 진정한 실행의 왕!");
+            }
+        }
+
+        // 배지 알림 표시
+        function showBadgeNotification(title, message) {
+            // 이미 이 배지를 받았는지 확인
+            const badgeKey = title.replace(/[^a-zA-Z0-9]/g, '');
+            if (localStorage.getItem(`badge_${badgeKey}`)) {
+                return; // 이미 받은 배지
+            }
+            
+            // 배지 기록
+            localStorage.setItem(`badge_${badgeKey}`, 'true');
+            
+            // 알림 표시 (더 눈에 띄게)
+            setTimeout(() => {
+                alert(`🎊 새로운 배지 획득!\n\n${title}\n${message}\n\n계속해서 목표를 달성해보세요!`);
+            }, 1000);
+        }
+
+        // 오늘의 미션 업데이트
+        function updateDailyMission() {
+            const missions = [
+                "첫 번째 작업을 30분 이내에 완료하기",
+                "2개 이상의 작업을 연속으로 완료하기", 
+                "1시간 집중해서 한 가지 일에만 몰입하기",
+                "포기하지 않고 끝까지 완주하기",
+                "목표 시간보다 5분 일찍 완료하기",
+                "오늘 3개 이상의 작업 달성하기",
+                "연속 달성일 기록 갱신하기"
+            ];
+            
+            const currentStreak = appData.stats.currentStreak;
+            const totalTasks = appData.stats.totalTasks;
+            
+            let selectedMission;
+            
+            if (currentStreak === 0) {
+                selectedMission = missions[0]; // 첫 완료 유도
+            } else if (currentStreak < 3) {
+                selectedMission = missions[1]; // 연속 완료 유도
+            } else if (currentStreak < 7) {
+                selectedMission = missions[2]; // 집중력 향상
+            } else {
+                // 고급 미션들 랜덤 선택
+                const advancedMissions = missions.slice(3);
+                const today = new Date().getDay();
+                selectedMission = advancedMissions[today % advancedMissions.length];
+            }
+            
+            document.getElementById('mission-content').textContent = selectedMission;
+        }
+
+        // 진행률 원형 게이지 업데이트
+        function updateProgressCircle(percentage) {
+            const circle = document.getElementById('progress-circle');
+            const radius = 60;
+            const circumference = 2 * Math.PI * radius;
+            const offset = circumference - (percentage / 100) * circumference;
+            
+            circle.style.strokeDasharray = circumference;
+            circle.style.strokeDashoffset = offset;
+        }
+
+        // 탭 전환
+        function switchTab(tabId) {
+            document.querySelectorAll('.tab-content').forEach(tab => tab.classList.remove('active'));
+            document.querySelectorAll('.nav-item').forEach(item => item.classList.remove('active'));
+            
+            document.getElementById(tabId).classList.add('active');
+            document.querySelector(`[data-tab="${tabId}"]`).classList.add('active');
+            
+            hideAllForms();
+        }
+
+        // 모든 폼 숨기기
+        function hideAllForms() {
+            document.querySelectorAll('.input-form').forEach(form => {
+                form.style.display = 'none';
+            });
+            editingTodoId = null;
+            convertingIdeaId = null;
+        }
+
+        // 설정 관련 함수들
+        function showSettings() {
+            document.getElementById('settings-overlay').style.display = 'block';
+        }
+
+        function hideSettings() {
+            document.getElementById('settings-overlay').style.display = 'none';
+        }
+
+        function updateSettingsUI() {
+            document.querySelectorAll('.toggle-switch').forEach(toggle => {
+                const setting = toggle.dataset.setting;
+                toggle.classList.toggle('active', appData.settings[setting]);
+            });
+        }
+
+        function updateBannerVisibility() {
+            const banners = [
+                document.getElementById('motivation-banner'),
+                document.getElementById('goal-motivation-banner')
+            ];
+            
+            banners.forEach(banner => {
+                if (banner) {
+                    if (appData.settings.motivationBanner) {
+                        banner.style.display = 'block';
+                    } else {
+                        banner.style.display = 'none';
+                    }
+                }
+            });
+        }
+
+        // 시간 슬라이더 관련 함수들
+        function updateTimeDisplay(formType, value) {
+            const displayId = formType + '-time-display';
+            const previewId = formType + '-money-preview';
+            
+            document.getElementById(displayId).textContent = value + '분';
+            
+            // 해당하는 칩도 업데이트
+            const form = document.getElementById(formType + '-form') || document.getElementById('convert-form');
+            if (form) {
+                const chips = form.querySelectorAll('.option-btn');
+                chips.forEach(chip => {
+                    chip.classList.remove('selected');
+                    if (chip.dataset.time == value) {
+                        chip.classList.add('selected');
+                    }
+                });
+                updateMoneyPreview(form);
+            }
+        }
+
+        function updateMoneyPreview(form) {
+            const slider = form.querySelector('.time-slider');
+            const preview = form.querySelector('.money-preview');
+            // 선택 입력 가치 금액이 있으면 그 값을 우선 표시
+            const valueInput = form.querySelector('#todo-value, #convert-value');
+            const customValue = valueInput ? parseInt(valueInput.value) : null;
+            
+            if (slider && preview) {
+                const minutes = parseInt(slider.value);
+                const expectedEarning = customValue != null ? customValue : (appData.goals.currentRate > 0 ? Math.floor((appData.goals.currentRate / 60) * minutes) : 0);
+                const expectedLoss = appData.goals.targetRate > 0 ? Math.floor((appData.goals.targetRate / 60) * minutes) : 0;
+                
+                preview.textContent = `예상 수익 ₩${expectedEarning.toLocaleString()} / 예상 손실 ₩${expectedLoss.toLocaleString()}`;
+            }
+        }
+
+        // 할 일 관련 함수들
+        function showTodoForm() {
+            hideAllForms();
+            document.getElementById('todo-form').style.display = 'block';
+            document.getElementById('todo-title').focus();
+        }
+
+        function hideTodoForm() {
+            document.getElementById('todo-form').style.display = 'none';
+            document.getElementById('todo-title').value = '';
+            editingTodoId = null;
+        }
+
+        function saveTodo() {
+            const title = document.getElementById('todo-title').value.trim();
+            const timeSlider = document.getElementById('todo-time-slider');
+            const timeMinutes = parseInt(timeSlider.value);
+            const repeat = document.querySelector('#todo-form .repeat-selector .option-btn.selected').dataset.repeat;
+            const customValue = parseInt(document.getElementById('todo-value').value) || null;
+            const quickComplete = document.getElementById('todo-quick-complete').checked;
+
+            if (!title) {
+                alert('할 일을 입력해주세요!');
+                return;
+            }
+
+            if (editingTodoId) {
+                // 수정 모드
+                const todoIndex = appData.todos.findIndex(t => t.id === editingTodoId);
+                if (todoIndex !== -1) {
+                    appData.todos[todoIndex] = {
+                        ...appData.todos[todoIndex],
+                        title: title,
+                        timeMinutes: timeMinutes,
+                        repeat: repeat,
+                        value: customValue,
+                        quick: quickComplete
+                    };
+                }
+            } else {
+                // 새 할 일 추가
+                const todo = {
+                    id: Date.now(),
+                    title: title,
+                    timeMinutes: timeMinutes,
+                    repeat: repeat,
+                    value: customValue,
+                    quick: quickComplete,
+                    completed: false,
+                    createdAt: new Date().toISOString()
+                };
+                appData.todos.push(todo);
+            }
+
+            saveAppData();
+            renderTodos();
+            hideTodoForm();
+        }
+
+        function renderTodos() {
+            const todoList = document.getElementById('todo-list');
+            todoList.innerHTML = '';
+
+            appData.todos.forEach(todo => {
+                const todoItem = document.createElement('div');
+                todoItem.className = 'list-item';
+                const quickBox = todo.quick ? `<input type="checkbox" onchange="toggleTodoQuick(${todo.id}, this.checked)">` : '';
+                todoItem.innerHTML = `
+                    <div class="item-content">
+                        <div class="item-title">${todo.title}</div>
+                        <div class="item-meta">${todo.timeMinutes}분 • ${todo.repeat === 'daily' ? '매일 반복' : '한번만'}${todo.value ? ` • 가치 ₩${todo.value.toLocaleString()}` : ''}</div>
+                    </div>
+                    <div class="item-actions">
+                        ${quickBox}
+                        <button class="action-btn start" onclick="startTodoTimer(${todo.id})" title="시작">
+                            <span class="icon icon-play"></span>
+                        </button>
+                        <button class="action-btn edit" onclick="editTodo(${todo.id})" title="수정">
+                            <span class="icon icon-edit"></span>
+                        </button>
+                        <button class="action-btn delete" onclick="deleteTodo(${todo.id})" title="삭제">
+                            <span class="icon icon-delete"></span>
+                        </button>
+                    </div>
+                `;
+                todoList.appendChild(todoItem);
+            });
+        }
+
+        function toggleTodoQuick(id, checked) {
+            const todo = appData.todos.find(t => t.id === id);
+            if (!todo) return;
+            if (checked) {
+                // 체크 즉시 완료 처리
+                const earnedAmount = todo.value != null ? todo.value : Math.floor((appData.goals.currentRate / 60) * todo.timeMinutes);
+                appData.stats.totalProfit += earnedAmount;
+                appData.stats.successDays++;
+                appData.stats.totalTasks++;
+                updateStreakAndWeekly(true);
+                if (todo.repeat === 'once') {
+                    appData.todos = appData.todos.filter(t => t.id !== id);
+                } else {
+                    todo.completed = true;
+                }
+                saveAppData();
+                renderTodos();
+                updateAllDisplays();
+                alert(`🎉 완료 체크! ₩${earnedAmount.toLocaleString()} 수익 반영`);
+            }
+        }
+
+        function editTodo(id) {
+            const todo = appData.todos.find(t => t.id === id);
+            if (todo) {
+                editingTodoId = id;
+                hideAllForms();
+                
+                document.getElementById('todo-title').value = todo.title;
+                
+                // 시간 선택 (슬라이더와 칩 동기화)
+                const timeSlider = document.getElementById('todo-time-slider');
+                const timeDisplay = document.getElementById('todo-time-display');
+                
+                timeSlider.value = todo.timeMinutes;
+                timeDisplay.textContent = todo.timeMinutes + '분';
+                
+                document.querySelectorAll('#todo-form .time-chips .option-btn').forEach(btn => {
+                    btn.classList.remove('selected');
+                    if (btn.dataset.time == todo.timeMinutes) {
+                        btn.classList.add('selected');
+                    }
+                });
+                
+                // 예상 수익/손실 업데이트
+                updateMoneyPreview(document.getElementById('todo-form'));
+                
+                // 반복 선택
+                document.querySelectorAll('#todo-form .repeat-selector .option-btn').forEach(btn => {
+                    btn.classList.remove('selected');
+                    if (btn.dataset.repeat === todo.repeat) {
+                        btn.classList.add('selected');
+                    }
+                });
+                
+                document.getElementById('todo-form').style.display = 'block';
+                document.getElementById('todo-title').focus();
+            }
+        }
+
+        function deleteTodo(id) {
+            if (confirm('이 할 일을 삭제하시겠습니까?')) {
+                appData.todos = appData.todos.filter(todo => todo.id !== id);
+                saveAppData();
+                renderTodos();
+            }
+        }
+
+        function startTodoTimer(id) {
+            const todo = appData.todos.find(t => t.id === id);
+            if (todo) {
+                appData.timer.currentTask = todo;
+                appData.timer.totalTime = todo.timeMinutes * 60;
+                appData.timer.timeLeft = appData.timer.totalTime;
+                appData.timer.isRunning = false;
+                appData.timer.isPaused = false;
+                
+                switchTab('timer-tab');
+                updateTimerDisplay();
+                updateTimerCircle();
+            }
+        }
+
+        // 아이디어 관련 함수들
+        function showIdeaForm() {
+            hideAllForms();
+            document.getElementById('idea-form').style.display = 'block';
+            document.getElementById('idea-title').focus();
+        }
+
+        function hideIdeaForm() {
+            document.getElementById('idea-form').style.display = 'none';
+            document.getElementById('idea-title').value = '';
+            document.getElementById('idea-content').value = '';
+        }
+
+        function saveIdea() {
+            const title = document.getElementById('idea-title').value.trim();
+            const content = document.getElementById('idea-content').value.trim();
+
+            if (!title || !content) {
+                alert('제목과 내용을 모두 입력해주세요!');
+                return;
+            }
+
+            const idea = {
+                id: Date.now(),
+                title: title,
+                content: content,
+                createdAt: new Date().toISOString()
+            };
+
+            appData.ideas.push(idea);
+            saveAppData();
+            renderIdeas();
+            hideIdeaForm();
+        }
+
+        function renderIdeas() {
+            const ideasList = document.getElementById('ideas-list');
+            ideasList.innerHTML = '';
+
+            appData.ideas.slice().reverse().forEach(idea => {
+                const ideaItem = document.createElement('div');
+                ideaItem.className = 'list-item';
+                
+                const date = new Date(idea.createdAt);
+                const formattedDate = `${date.getMonth() + 1}/${date.getDate()}`;
+                
+                ideaItem.innerHTML = `
+                    <div class="item-content">
+                        <div class="item-title">${idea.title}</div>
+                        <div class="item-meta">${idea.content.substring(0, 50)}... • ${formattedDate}</div>
+                    </div>
+                    <div class="item-actions">
+                        <button class="action-btn convert" onclick="showConvertForm(${idea.id})" title="할일로 변환">
+                            <span class="icon icon-convert"></span>
+                        </button>
+                        <button class="action-btn delete" onclick="deleteIdea(${idea.id})" title="삭제">
+                            <span class="icon icon-delete"></span>
+                        </button>
+                    </div>
+                `;
+                ideasList.appendChild(ideaItem);
+            });
+        }
+
+        function deleteIdea(id) {
+            if (confirm('이 아이디어를 삭제하시겠습니까?')) {
+                appData.ideas = appData.ideas.filter(idea => idea.id !== id);
+                saveAppData();
+                renderIdeas();
+            }
+        }
+
+        // 아이디어 → 할일 변환
+        function showConvertForm(id) {
+            const idea = appData.ideas.find(i => i.id === id);
+            if (idea) {
+                convertingIdeaId = id;
+                hideAllForms();
+                
+                document.getElementById('convert-title').value = idea.title;
+                document.getElementById('convert-form').style.display = 'block';
+            }
+        }
+
+        function confirmConvert() {
+            const title = document.getElementById('convert-title').value.trim();
+            const timeSlider = document.getElementById('convert-time-slider');
+            const timeMinutes = parseInt(timeSlider.value);
+            const repeat = document.querySelector('#convert-form .repeat-selector .option-btn.selected').dataset.repeat;
+            const customValue = parseInt(document.getElementById('convert-value').value) || null;
+            const quickComplete = document.getElementById('convert-quick-complete').checked;
+
+            if (!title) {
+                alert('할 일 제목을 입력해주세요!');
+                return;
+            }
+
+            const todo = {
+                id: Date.now(),
+                title: title,
+                timeMinutes: timeMinutes,
+                repeat: repeat,
+                value: customValue,
+                quick: quickComplete,
+                completed: false,
+                createdAt: new Date().toISOString()
+            };
+
+            appData.todos.push(todo);
+            saveAppData();
+            renderTodos();
+            
+            cancelConvert();
+            alert('아이디어가 할 일로 변환되었습니다!');
+            switchTab('todos-tab');
+        }
+
+        function cancelConvert() {
+            document.getElementById('convert-form').style.display = 'none';
+            document.getElementById('convert-title').value = '';
+            convertingIdeaId = null;
+        }
+
+        // 타이머 관련 함수들
+        function toggleTimer() {
+            if (!appData.timer.currentTask) {
+                alert('먼저 할 일을 선택해주세요!');
+                return;
+            }
+
+            if (!appData.timer.isRunning) {
+                startTimer();
+            } else if (appData.timer.isPaused) {
+                resumeTimer();
+            } else {
+                pauseTimer();
+            }
+        }
+
+        function startTimer() {
+            appData.timer.isRunning = true;
+            appData.timer.isPaused = false;
+            updatePlayPauseButton();
+            
+            appData.timer.interval = setInterval(() => {
+                if (appData.timer.timeLeft > 0) {
+                    appData.timer.timeLeft--;
+                    updateTimerDisplay();
+                    updateTimerCircle();
+                    updateMoneyDisplay();
+                } else {
+                    completeTimer();
+                }
+            }, 1000);
+        }
+
+        // 연속일수와 주간 통계 업데이트
+        function updateStreakAndWeekly(isSuccess) {
+            const today = new Date().toDateString();
+            const lastActive = appData.stats.lastActiveDate;
+            
+            if (isSuccess) {
+                // 연속일수 계산
+                if (lastActive) {
+                    const lastDate = new Date(lastActive);
+                    const todayDate = new Date(today);
+                    const dayDiff = Math.floor((todayDate - lastDate) / (1000 * 60 * 60 * 24));
+                    
+                    if (dayDiff === 1) {
+                        // 연속일수 증가
+                        appData.stats.currentStreak++;
+                    } else if (dayDiff === 0) {
+                        // 같은 날 추가 완료 (연속일수 유지)
+                    } else {
+                        // 연속일수 리셋
+                        appData.stats.currentStreak = 1;
+                    }
+                } else {
+                    // 첫 완료
+                    appData.stats.currentStreak = 1;
+                }
+                
+                // 최고 연속일수 업데이트
+                if (appData.stats.currentStreak > appData.stats.longestStreak) {
+                    appData.stats.longestStreak = appData.stats.currentStreak;
+                }
+                
+                // 이번 주 완료 작업 수 증가
+                if (isThisWeek(today)) {
+                    appData.stats.thisWeekTasks++;
+                }
+                
+                appData.stats.lastActiveDate = today;
+            } else {
+                // 실패 시 연속일수 리셋하지 않음 (포기해도 그날 다른 작업 가능)
+            }
+        }
+
+        // 이번 주인지 확인
+        function isThisWeek(dateString) {
+            const date = new Date(dateString);
+            const today = new Date();
+            const startOfWeek = new Date(today.setDate(today.getDate() - today.getDay()));
+            const endOfWeek = new Date(today.setDate(today.getDate() - today.getDay() + 6));
+            
+            return date >= startOfWeek && date <= endOfWeek;
+        }
+
+        // 성과 공유 함수
+        function shareProgress() {
+            const currentRate = appData.goals.currentRate;
+            const targetRate = appData.goals.targetRate;
+            const achievement = targetRate > 0 ? Math.round((currentRate / targetRate) * 100) : 0;
+            const thisWeekEarning = Math.round(appData.stats.thisWeekTasks * (currentRate / 2)); // 평균 30분 기준
+            
+            // 더 매력적이고 간단한 공유 텍스트
+            let shareText = `🔥 천억부자 타이머 도전 중!\n\n`;
+            
+            if (appData.stats.currentStreak >= 7) {
+                shareText += `💎 ${appData.stats.currentStreak}일 연속 달성! (대박!)\n`;
+            } else if (appData.stats.currentStreak >= 3) {
+                shareText += `🔥 ${appData.stats.currentStreak}일 연속 달성!\n`;
+            } else {
+                shareText += `🎯 목표를 향해 달려가는 중!\n`;
+            }
+            
+            shareText += `📊 이번 주: ${appData.stats.thisWeekTasks}개 완료\n`;
+            shareText += `💰 이번 주 수익: ₩${thisWeekEarning.toLocaleString()}\n`;
+            shareText += `🚀 목표 달성률: ${achievement}%\n\n`;
+            shareText += `"실행력이 인생을 바꾼다"\n`;
+            shareText += `🎯 천억부자 타이머로 나도 도전하기!`;
+            
+            if (navigator.share) {
+                navigator.share({
+                    title: '천억부자 타이머 성과',
+                    text: shareText
+                });
+            } else if (navigator.clipboard) {
+                navigator.clipboard.writeText(shareText).then(() => {
+                    alert('🎉 성과가 클립보드에 복사되었습니다!\n\n카카오톡 스토리나 인스타그램에\n붙여넣어서 자랑해보세요! 💪');
+                });
+            } else {
+                // 임시 텍스트 영역 생성하여 복사
+                const textArea = document.createElement('textarea');
+                textArea.value = shareText;
+                document.body.appendChild(textArea);
+                textArea.select();
+                document.execCommand('copy');
+                document.body.removeChild(textArea);
+                alert('🎉 성과가 복사되었습니다!\n\n카카오톡 스토리나 인스타그램에\n붙여넣어서 자랑해보세요! 💪');
+            }
+        }
+
+        // 보고서 모달
+        function showReport() {
+            updateReportDisplay();
+            document.getElementById('report-overlay').style.display = 'block';
+        }
+
+        function hideReport() {
+            document.getElementById('report-overlay').style.display = 'none';
+        }
+
+        function updateReportDisplay() {
+            const profit = appData.stats.totalProfit || 0;
+            const loss = appData.stats.totalLoss || 0;
+            const net = profit - loss;
+            document.getElementById('report-total-profit').textContent = `₩${profit.toLocaleString()}`;
+            document.getElementById('report-total-loss').textContent = `₩${loss.toLocaleString()}`;
+            document.getElementById('report-net-profit').textContent = `₩${net.toLocaleString()}`;
+
+            const totalAbs = Math.max(1, Math.abs(profit) + Math.abs(loss));
+            const profitPct = Math.min(100, Math.round((Math.abs(profit) / totalAbs) * 100));
+            const lossPct = Math.min(100, Math.round((Math.abs(loss) / totalAbs) * 100));
+            const netPct = Math.min(100, Math.max(0, Math.round((net / (totalAbs || 1)) * 100 + 50)));
+            document.getElementById('chart-profit-fill').style.width = profitPct + '%';
+            document.getElementById('chart-loss-fill').style.width = lossPct + '%';
+            document.getElementById('chart-net-fill').style.width = Math.min(100, Math.max(0, profitPct - Math.min(profitPct, lossPct) + 20)) + '%';
+
+            const streak = appData.stats.currentStreak || 0;
+            const tasks = appData.stats.totalTasks || 0;
+            let msg = '오늘도 꾸준히 가봅시다! 🔥';
+            if (net > 0 && streak >= 3) msg = `좋아요! 순이익 +₩${net.toLocaleString()} / ${streak}일 연속! 계속 갑시다! 🚀`;
+            else if (net > 0) msg = `순이익 +₩${net.toLocaleString()} 달성! 다음 목표도 바로 이어가요! 💪`;
+            else if (loss > 0) msg = `아쉬워요... 손실 ₩${loss.toLocaleString()}. 15분만 집중해서 만회해볼까요? 🕒`;
+            else if (tasks === 0) msg = '첫 시작이 반입니다. 15분 타이머로 가볍게 시작해보세요! ✨';
+            document.getElementById('report-message-text').textContent = msg;
+        }
+
+        function shareReport() {
+            const profit = appData.stats.totalProfit || 0;
+            const loss = appData.stats.totalLoss || 0;
+            const net = profit - loss;
+            const text = `📊 천억부자 타이머 리포트\n총 수익: ₩${profit.toLocaleString()}\n총 손실: ₩${loss.toLocaleString()}\n순수익: ₩${net.toLocaleString()}\n#천억부자타이머 #실행력`;
+            if (navigator.share) {
+                navigator.share({ title: '성과 보고서', text });
+            } else if (navigator.clipboard) {
+                navigator.clipboard.writeText(text).then(() => alert('보고서가 복사되었습니다. 원하는 곳에 붙여넣기 하세요!'));
+            } else {
+                alert(text);
+            }
+        }
+
+        function pauseTimer() {
+            appData.timer.isPaused = true;
+            clearInterval(appData.timer.interval);
+            updatePlayPauseButton();
+        }
+
+        function resumeTimer() {
+            appData.timer.isPaused = false;
+            updatePlayPauseButton();
+            startTimer();
+        }
+
+        function updatePlayPauseButton() {
+            const btn = document.getElementById('play-pause-btn');
+            const icon = btn.querySelector('.icon');
+            
+            if (!appData.timer.isRunning || appData.timer.isPaused) {
+                icon.className = 'icon icon-play';
+            } else {
+                icon.className = 'icon icon-pause';
+            }
+        }
+
+        
+function completeTimer() {
+            clearInterval(appData.timer.interval);
+            appData.timer.isRunning = false;
+            appData.timer.isPaused = false;
+
+            if (appData.timer.currentTask) {
+                // 우선순위: (1) 작업의 가치 금액 -> (2) 시급 기반 계산
+                const customVal = parseInt(appData.timer.currentTask.value);
+                let earnedAmount;
+                if (!isNaN(customVal) && customVal > 0) {
+                    earnedAmount = customVal;
+                } else {
+                    const baseMinutes = appData.timer.currentTask.timeMinutes || 0;
+                    earnedAmount = Math.floor((appData.goals.currentRate / 60) * baseMinutes);
+                }
+
+                // 통계 업데이트
+                appData.stats.totalProfit += earnedAmount;
+                appData.stats.successDays++;
+                appData.stats.totalTasks++;
+                updateStreakAndWeekly(true);
+
+                alert(`🎉 작업 완료!\n₩${earnedAmount.toLocaleString()}을 벌어들였습니다!`);
+
+                // 최근 완료 목록 추가
+                appData.stats.recentCompletions.unshift({
+                    title: appData.timer.currentTask.title,
+                    minutes: appData.timer.currentTask.timeMinutes,
+                    value: earnedAmount,
+                    date: new Date().toISOString().split('T')[0]
+                });
+                appData.stats.recentCompletions = appData.stats.recentCompletions.slice(0, 10);
+
+                // 오늘 수입 업데이트
+                const today = new Date().toISOString().split('T')[0];
+                const dayStat = appData.stats.history.find(d => d.date === today) || { date: today, profit: 0, loss: 0, tasks: 0 };
+                dayStat.profit += earnedAmount;
+                dayStat.tasks += 1;
+                if (!appData.stats.history.some(d => d.date === today)) {
+                    appData.stats.history.push(dayStat);
+                }
+
+                // 한번만 실행하는 할 일은 삭제
+                if (appData.timer.currentTask.repeat === 'once') {
+                    appData.todos = appData.todos.filter(todo => todo.id !== appData.timer.currentTask.id);
+                    renderTodos();
+                }
+
+                saveAppData();
+            }
+
+            resetTimer();
+        }
+
+
+        function giveUpTimer() {
+            if (!appData.timer.isRunning && !appData.timer.currentTask) {
+                alert('진행 중인 작업이 없습니다!');
+                return;
+            }
+
+            if (confirm('정말 포기하시겠습니까?')) {
+                clearInterval(appData.timer.interval);
+                
+                if (appData.timer.currentTask) {
+                    const elapsedMinutes = (appData.timer.totalTime - appData.timer.timeLeft) / 60;
+                    const lostAmount = Math.floor((appData.goals.targetRate / 60) * elapsedMinutes);
+                    
+                    // 통계 업데이트
+                    appData.stats.totalLoss += lostAmount;
+                    appData.stats.failDays++;
+                    updateStreakAndWeekly(false);
+                    
+                    alert(`😔 작업 포기...\n₩${lostAmount.toLocaleString()}의 기회비용이 발생했습니다.`);
+                    saveAppData();
+                }
+                
+                resetTimer();
+            }
+        }
+
+        function resetTimer() {
+            appData.timer.isRunning = false;
+            appData.timer.isPaused = false;
+            appData.timer.timeLeft = 0;
+            appData.timer.currentTask = null;
+            updateTimerDisplay();
+            updateTimerCircle();
+            updateMoneyDisplay();
+            updatePlayPauseButton();
+            updateStatsDisplay();
+        }
+
+        function updateTimerDisplay() {
+            const minutes = Math.floor(appData.timer.timeLeft / 60);
+            const seconds = appData.timer.timeLeft % 60;
+            
+            document.getElementById('timer-time').textContent = 
+                `${minutes.toString().padStart(2, '0')}:${seconds.toString().padStart(2, '0')}`;
+            
+            document.getElementById('timer-task').textContent = 
+                appData.timer.currentTask ? appData.timer.currentTask.title : '작업을 선택하세요';
+        }
+
+        function updateTimerCircle() {
+            const circle = document.getElementById('timer-progress');
+            const radius = 135;
+            const circumference = 2 * Math.PI * radius;
+            
+            if (appData.timer.totalTime > 0) {
+                const percentage = ((appData.timer.totalTime - appData.timer.timeLeft) / appData.timer.totalTime) * 100;
+                const offset = circumference - (percentage / 100) * circumference;
+                
+                circle.style.strokeDasharray = circumference;
+                circle.style.strokeDashoffset = offset;
+            } else {
+                circle.style.strokeDasharray = circumference;
+                circle.style.strokeDashoffset = circumference;
+            }
+        }
+
+        function updateMoneyDisplay() {
+            const moneyAmount = document.getElementById('money-amount');
+            const moneyStatus = document.getElementById('money-status');
+            const lossSection = document.getElementById('money-loss');
+            const lossAmount = document.getElementById('loss-amount');
+
+            if (appData.timer.isRunning && appData.timer.currentTask && !appData.timer.isPaused) {
+                const elapsedMinutes = (appData.timer.totalTime - appData.timer.timeLeft) / 60;
+                const earnedAmount = Math.floor((appData.goals.currentRate / 60) * elapsedMinutes);
+                
+                moneyAmount.textContent = `₩${earnedAmount.toLocaleString()}`;
+                moneyStatus.textContent = '벌어들이는 중';
+                
+                const potentialLoss = Math.floor((appData.goals.targetRate / 60) * elapsedMinutes);
+                lossAmount.textContent = `₩${potentialLoss.toLocaleString()} 손해`;
+                lossSection.style.display = appData.settings.showLoss ? 'block' : 'none';
+                
+                // 모바일 카드 업데이트
+                document.getElementById('mobile-earning').textContent = `₩${earnedAmount.toLocaleString()}`;
+                document.getElementById('mobile-loss').textContent = `₩${potentialLoss.toLocaleString()}`;
+                document.getElementById('mobile-loss-card').style.display = appData.settings.showLoss ? 'flex' : 'none';
+                
+                if (appData.timer.timeLeft % 30 === 0) {
+                    lossAmount.classList.add('shake');
+                    setTimeout(() => lossAmount.classList.remove('shake'), 500);
+                }
+                
+            } else if (appData.timer.isPaused) {
+                moneyStatus.textContent = '일시정지됨';
+                lossSection.style.display = 'none';
+                
+                // 모바일 카드 업데이트
+                document.getElementById('mobile-loss-card').style.display = 'none';
+            } else {
+                moneyAmount.textContent = '₩0';
+                moneyStatus.textContent = '대기 중';
+                lossSection.style.display = 'none';
+                
+                // 모바일 카드 업데이트
+                document.getElementById('mobile-earning').textContent = '₩0';
+                document.getElementById('mobile-loss-card').style.display = 'none';
+            }
+        }
+    </script>
+</body>
+</html>

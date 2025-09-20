@@ -1,0 +1,9 @@
+{
+  "name": "천억부자 타이머",
+  "short_name": "부자타이머",
+  "start_url": ".",
+  "display": "standalone",
+  "background_color": "#111111",
+  "theme_color": "#111111",
+  "icons": []
+}
