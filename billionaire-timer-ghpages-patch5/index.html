@@ -2115,16 +2115,18 @@ body{display:flex;justify-content:center;background:linear-gradient(#ffffff,#f8f
             goals: { currentRate: 0, targetRate: 0 },
             todos: [],
             ideas: [],
-            stats: { 
-                totalProfit: 0, 
-                totalLoss: 0, 
-                successDays: 0, 
+            stats: {
+                totalProfit: 0,
+                totalLoss: 0,
+                successDays: 0,
                 failDays: 0,
                 currentStreak: 0,
                 longestStreak: 0,
                 thisWeekTasks: 0,
                 totalTasks: 0,
-                lastActiveDate: null
+                lastActiveDate: null,
+                recentCompletions: [],
+                history: []
             },
             timer: {
                 isRunning: false,
@@ -2160,6 +2162,16 @@ body{display:flex;justify-content:center;background:linear-gradient(#ffffff,#f8f
             const savedData = localStorage.getItem('final_billionaire_app');
             if (savedData) {
                 appData = { ...appData, ...JSON.parse(savedData) };
+            }
+
+            if (!appData.stats) {
+                appData.stats = {};
+            }
+            if (!Array.isArray(appData.stats.recentCompletions)) {
+                appData.stats.recentCompletions = [];
+            }
+            if (!Array.isArray(appData.stats.history)) {
+                appData.stats.history = [];
             }
         }
 
@@ -2365,16 +2377,18 @@ body{display:flex;justify-content:center;background:linear-gradient(#ffffff,#f8f
             if (confirm('🚨 정말 목표를 초기화하시겠습니까?\n\n모든 통계와 기록이 삭제됩니다.\n이 작업은 되돌릴 수 없습니다.')) {
                 // 데이터 초기화
                 appData.goals = { currentRate: 0, targetRate: 0 };
-                appData.stats = { 
-                    totalProfit: 0, 
-                    totalLoss: 0, 
-                    successDays: 0, 
+                appData.stats = {
+                    totalProfit: 0,
+                    totalLoss: 0,
+                    successDays: 0,
                     failDays: 0,
                     currentStreak: 0,
                     longestStreak: 0,
                     thisWeekTasks: 0,
                     totalTasks: 0,
-                    lastActiveDate: null
+                    lastActiveDate: null,
+                    recentCompletions: [],
+                    history: []
                 };
                 appData.todos = [];
                 appData.ideas = [];
