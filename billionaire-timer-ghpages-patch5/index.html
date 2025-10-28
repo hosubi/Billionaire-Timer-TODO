@@ -99,6 +99,34 @@
         .header-status { display: inline-flex; gap: 12px; align-items: center; }
         .header-pill { background: #f8f9fa; border: 1px solid #e9ecef; border-radius: 999px; padding: 6px 10px; font-size: 12px; font-weight: 700; color: #333; }
         .header-pill.gold { border-color: #d4af37; color: #d4af37; }
+        .header-pill.demo { border-color: #495057; color: #495057; background: rgba(73,80,87,0.08); }
+
+        .demo-badge {
+            display: inline-flex;
+            align-items: center;
+            gap: 4px;
+            padding: 2px 8px;
+            border-radius: 999px;
+            background: rgba(212,175,55,0.18);
+            color: #8c6d1f;
+            font-size: 11px;
+            font-weight: 700;
+            margin-left: 8px;
+        }
+
+        .demo-banner {
+            background: rgba(212,175,55,0.1);
+            border: 1px dashed rgba(212,175,55,0.6);
+            color: #8c6d1f;
+            padding: 14px 16px;
+            border-radius: 14px;
+            font-weight: 700;
+            font-size: 13px;
+            margin-bottom: 16px;
+            display: flex;
+            align-items: center;
+            gap: 8px;
+        }
 
         .header h1 {
             font-size: 24px;
@@ -1558,6 +1586,7 @@ body{display:flex;justify-content:center;background:linear-gradient(#ffffff,#f8f
                 <div class="header-status">
                     <span class="header-pill gold" id="header-net">순익 ₩0</span>
                     <span class="header-pill" id="header-streak">연속 0일</span>
+                    <span class="header-pill demo hidden" id="demo-data-pill">체험용 데이터</span>
                 </div>
             </div>
             <button class="menu-btn" id="menu-btn">
@@ -1658,6 +1687,7 @@ body{display:flex;justify-content:center;background:linear-gradient(#ffffff,#f8f
                         </div>
                     </div>
                     
+                    <div class="demo-banner hidden" id="demo-data-banner">💡 현재는 체험용 데이터가 표시되고 있어요. 목표를 설정하면 나만의 기록이 시작됩니다.</div>
                     <div class="goal-grid">
                         <div class="goal-item">
                             <div class="goal-label">현재 시급</div>
@@ -2111,39 +2141,142 @@ body{display:flex;justify-content:center;background:linear-gradient(#ffffff,#f8f
 
     <script>
         // 전역 변수
-        let appData = {
-            goals: { currentRate: 0, targetRate: 0 },
-            todos: [],
-            ideas: [],
-            stats: { 
-                totalProfit: 0, 
-                totalLoss: 0, 
-                successDays: 0, 
-                failDays: 0,
-                currentStreak: 0,
-                longestStreak: 0,
-                thisWeekTasks: 0,
-                totalTasks: 0,
-                lastActiveDate: null
-            },
-            timer: {
-                isRunning: false,
-                isPaused: false,
-                timeLeft: 0,
-                totalTime: 0,
-                currentTask: null,
-                interval: null
-            },
-            settings: {
-                showLoss: true,
-                siteWarning: true,
-                notifications: true,
-                sound: true,
-                motivationBanner: true,
-                autoReschedule: false,
-                focusEfficiency: 0.7
+        function createEmptyAppData() {
+            return {
+                isDemo: false,
+                goals: { currentRate: 0, targetRate: 0 },
+                todos: [],
+                ideas: [],
+                stats: {
+                    totalProfit: 0,
+                    totalLoss: 0,
+                    successDays: 0,
+                    failDays: 0,
+                    currentStreak: 0,
+                    longestStreak: 0,
+                    thisWeekTasks: 0,
+                    totalTasks: 0,
+                    lastActiveDate: null,
+                    history: [],
+                    recentCompletions: []
+                },
+                timer: {
+                    isRunning: false,
+                    isPaused: false,
+                    timeLeft: 0,
+                    totalTime: 0,
+                    currentTask: null,
+                    interval: null
+                },
+                settings: {
+                    showLoss: true,
+                    siteWarning: true,
+                    notifications: true,
+                    sound: true,
+                    motivationBanner: true,
+                    autoReschedule: false,
+                    focusEfficiency: 0.7
+                }
+            };
+        }
+
+        function seedDemoData() {
+            const demo = createEmptyAppData();
+            demo.isDemo = true;
+            demo.goals = { currentRate: 55000, targetRate: 150000 };
+            demo.todos = [
+                {
+                    id: 101,
+                    title: '럭셔리 세일즈 페이지 개선',
+                    timeMinutes: 45,
+                    repeat: 'once',
+                    value: 82000,
+                    quick: false,
+                    completed: false,
+                    createdAt: '2024-03-18T09:00:00.000Z',
+                    isDemo: true
+                },
+                {
+                    id: 102,
+                    title: 'VIP 고객 인터뷰 2명 진행',
+                    timeMinutes: 60,
+                    repeat: 'daily',
+                    value: 120000,
+                    quick: false,
+                    completed: false,
+                    createdAt: '2024-03-19T04:00:00.000Z',
+                    isDemo: true
+                },
+                {
+                    id: 103,
+                    title: '프리미엄 패키지 업셀링 시나리오 작성',
+                    timeMinutes: 30,
+                    repeat: 'once',
+                    value: 68000,
+                    quick: true,
+                    completed: false,
+                    createdAt: '2024-03-19T06:00:00.000Z',
+                    isDemo: true
+                }
+            ];
+            demo.ideas = [
+                {
+                    id: 201,
+                    title: '프리미엄 마스터클래스 런칭',
+                    content: '상위 1% 고객을 위한 4주 집중 코칭. 고급 네트워킹과 실전 과제를 포함합니다.',
+                    createdAt: '2024-03-17T05:00:00.000Z',
+                    isDemo: true
+                },
+                {
+                    id: 202,
+                    title: '유료 커뮤니티 VIP 라운지',
+                    content: '주간 멘토링과 실시간 피드백이 포함된 전용 라운지. 전담 매니저 배정.',
+                    createdAt: '2024-03-18T02:30:00.000Z',
+                    isDemo: true
+                }
+            ];
+            demo.stats = {
+                ...demo.stats,
+                totalProfit: 1240000,
+                totalLoss: 180000,
+                successDays: 4,
+                failDays: 1,
+                currentStreak: 3,
+                longestStreak: 6,
+                thisWeekTasks: 5,
+                totalTasks: 17,
+                lastActiveDate: '2024-03-19',
+                history: [
+                    { date: '2024-03-17', profit: 350000, loss: 0, tasks: 3 },
+                    { date: '2024-03-18', profit: 420000, loss: 0, tasks: 4 },
+                    { date: '2024-03-19', profit: 470000, loss: 80000, tasks: 3 }
+                ],
+                recentCompletions: [
+                    { title: '럭셔리 세일즈 페이지 개선', minutes: 45, value: 82000, date: '2024-03-19' },
+                    { title: 'VIP 고객 인터뷰 2명 진행', minutes: 60, value: 120000, date: '2024-03-18' },
+                    { title: '퍼널 리포트 정밀 분석', minutes: 35, value: 98000, date: '2024-03-17' }
+                ]
+            };
+            return demo;
+        }
+
+        let appData = createEmptyAppData();
+
+        function ensureDemoCleared() {
+            if (appData.isDemo) {
+                const previousInterval = appData.timer && appData.timer.interval;
+                const preservedSettings = { ...appData.settings };
+                appData = createEmptyAppData();
+                appData.settings = { ...preservedSettings };
+                if (previousInterval) {
+                    clearInterval(previousInterval);
+                }
+                showGoalSetup();
+                updateDemoIndicators();
+                return true;
             }
-        };
+            return false;
+        }
 
         let editingTodoId = null;
         let convertingIdeaId = null;
@@ -2159,12 +2292,33 @@ body{display:flex;justify-content:center;background:linear-gradient(#ffffff,#f8f
         function loadAppData() {
             const savedData = localStorage.getItem('final_billionaire_app');
             if (savedData) {
-                appData = { ...appData, ...JSON.parse(savedData) };
+                const parsed = JSON.parse(savedData);
+                const defaults = createEmptyAppData();
+                appData = {
+                    ...defaults,
+                    ...parsed,
+                    goals: { ...defaults.goals, ...(parsed.goals || {}) },
+                    stats: { ...defaults.stats, ...(parsed.stats || {}) },
+                    timer: { ...defaults.timer, ...(parsed.timer || {}) },
+                    settings: { ...defaults.settings, ...(parsed.settings || {}) }
+                };
+                if (!Array.isArray(appData.stats.history)) {
+                    appData.stats.history = [];
+                }
+                if (!Array.isArray(appData.stats.recentCompletions)) {
+                    appData.stats.recentCompletions = [];
+                }
+                appData.todos = Array.isArray(parsed.todos) ? parsed.todos.map(todo => ({ ...todo, isDemo: false })) : [];
+                appData.ideas = Array.isArray(parsed.ideas) ? parsed.ideas.map(idea => ({ ...idea, isDemo: false })) : [];
+                appData.isDemo = false;
+            } else {
+                appData = seedDemoData();
             }
         }
 
         // 데이터 저장
         function saveAppData() {
+            if (appData.isDemo) return;
             localStorage.setItem('final_billionaire_app', JSON.stringify(appData));
         }
 
@@ -2327,6 +2481,8 @@ body{display:flex;justify-content:center;background:linear-gradient(#ffffff,#f8f
                 return;
             }
 
+            const clearedDemo = ensureDemoCleared();
+
             appData.goals.currentRate = currentRate;
             appData.goals.targetRate = targetRate;
             saveAppData();
@@ -2363,33 +2519,22 @@ body{display:flex;justify-content:center;background:linear-gradient(#ffffff,#f8f
         // 목표 초기화
         function resetGoals() {
             if (confirm('🚨 정말 목표를 초기화하시겠습니까?\n\n모든 통계와 기록이 삭제됩니다.\n이 작업은 되돌릴 수 없습니다.')) {
-                // 데이터 초기화
-                appData.goals = { currentRate: 0, targetRate: 0 };
-                appData.stats = { 
-                    totalProfit: 0, 
-                    totalLoss: 0, 
-                    successDays: 0, 
-                    failDays: 0,
-                    currentStreak: 0,
-                    longestStreak: 0,
-                    thisWeekTasks: 0,
-                    totalTasks: 0,
-                    lastActiveDate: null
-                };
-                appData.todos = [];
-                appData.ideas = [];
-                
+                const preservedSettings = { ...appData.settings };
+                appData = createEmptyAppData();
+                appData.settings = { ...preservedSettings };
+
                 // 배지 기록도 초기화
                 Object.keys(localStorage).forEach(key => {
                     if (key.startsWith('badge_')) {
                         localStorage.removeItem(key);
                     }
                 });
-                
+
                 saveAppData();
+                updateDemoIndicators();
                 showGoalSetup();
                 updateAllDisplays();
-                
+
                 alert('✅ 목표가 초기화되었습니다!\n새로운 도전을 시작해보세요! 💪');
             }
         }
@@ -2406,6 +2551,7 @@ body{display:flex;justify-content:center;background:linear-gradient(#ffffff,#f8f
             updateSettingsUI();
             updateReportDisplay();
             updateHeaderStatus();
+            updateDemoIndicators();
         }
 
         function updateHeaderStatus() {
@@ -2415,6 +2561,13 @@ body{display:flex;justify-content:center;background:linear-gradient(#ffffff,#f8f
             const streakEl = document.getElementById('header-streak');
             if (netEl) netEl.textContent = `순익 ₩${net.toLocaleString()}`;
             if (streakEl) streakEl.textContent = `연속 ${streak}일`;
+        }
+
+        function updateDemoIndicators() {
+            const demoPill = document.getElementById('demo-data-pill');
+            const demoBanner = document.getElementById('demo-data-banner');
+            if (demoPill) demoPill.classList.toggle('hidden', !appData.isDemo);
+            if (demoBanner) demoBanner.classList.toggle('hidden', !appData.isDemo);
         }
 
         // 목표 디스플레이 업데이트
@@ -2684,6 +2837,9 @@ body{display:flex;justify-content:center;background:linear-gradient(#ffffff,#f8f
                 return;
             }
 
+            const clearedDemo = ensureDemoCleared();
+
+            let todoUpdated = false;
             if (editingTodoId) {
                 // 수정 모드
                 const todoIndex = appData.todos.findIndex(t => t.id === editingTodoId);
@@ -2696,8 +2852,11 @@ body{display:flex;justify-content:center;background:linear-gradient(#ffffff,#f8f
                         value: customValue,
                         quick: quickComplete
                     };
+                    todoUpdated = true;
                 }
-            } else {
+            }
+
+            if (!todoUpdated) {
                 // 새 할 일 추가
                 const todo = {
                     id: Date.now(),
@@ -2713,7 +2872,11 @@ body{display:flex;justify-content:center;background:linear-gradient(#ffffff,#f8f
             }
 
             saveAppData();
-            renderTodos();
+            if (clearedDemo) {
+                updateAllDisplays();
+            } else {
+                renderTodos();
+            }
             hideTodoForm();
         }
 
@@ -2725,9 +2888,10 @@ body{display:flex;justify-content:center;background:linear-gradient(#ffffff,#f8f
                 const todoItem = document.createElement('div');
                 todoItem.className = 'list-item';
                 const quickBox = todo.quick ? `<input type="checkbox" onchange="toggleTodoQuick(${todo.id}, this.checked)">` : '';
+                const demoBadge = todo.isDemo ? '<span class="demo-badge">체험용</span>' : '';
                 todoItem.innerHTML = `
                     <div class="item-content">
-                        <div class="item-title">${todo.title}</div>
+                        <div class="item-title">${todo.title}${demoBadge}</div>
                         <div class="item-meta">${todo.timeMinutes}분 • ${todo.repeat === 'daily' ? '매일 반복' : '한번만'}${todo.value ? ` • 가치 ₩${todo.value.toLocaleString()}` : ''}</div>
                     </div>
                     <div class="item-actions">
@@ -2750,6 +2914,15 @@ body{display:flex;justify-content:center;background:linear-gradient(#ffffff,#f8f
         function toggleTodoQuick(id, checked) {
             const todo = appData.todos.find(t => t.id === id);
             if (!todo) return;
+            if (todo.isDemo) {
+                const cleared = ensureDemoCleared();
+                if (cleared) {
+                    saveAppData();
+                    updateAllDisplays();
+                    alert('체험용 데이터가 초기화되었습니다. 나만의 할 일을 추가해보세요!');
+                }
+                return;
+            }
             if (checked) {
                 // 체크 즉시 완료 처리
                 const earnedAmount = todo.value != null ? todo.value : Math.floor((appData.goals.currentRate / 60) * todo.timeMinutes);
@@ -2809,15 +2982,29 @@ body{display:flex;justify-content:center;background:linear-gradient(#ffffff,#f8f
 
         function deleteTodo(id) {
             if (confirm('이 할 일을 삭제하시겠습니까?')) {
+                const wasDemo = ensureDemoCleared();
                 appData.todos = appData.todos.filter(todo => todo.id !== id);
                 saveAppData();
-                renderTodos();
+                if (wasDemo) {
+                    updateAllDisplays();
+                } else {
+                    renderTodos();
+                }
             }
         }
 
         function startTodoTimer(id) {
             const todo = appData.todos.find(t => t.id === id);
             if (todo) {
+                if (todo.isDemo) {
+                    const cleared = ensureDemoCleared();
+                    if (cleared) {
+                        saveAppData();
+                        updateAllDisplays();
+                        alert('체험용 데이터가 초기화되었습니다. 나만의 할 일을 추가해보세요!');
+                    }
+                    return;
+                }
                 appData.timer.currentTask = todo;
                 appData.timer.totalTime = todo.timeMinutes * 60;
                 appData.timer.timeLeft = appData.timer.totalTime;
@@ -2852,6 +3039,8 @@ body{display:flex;justify-content:center;background:linear-gradient(#ffffff,#f8f
                 return;
             }
 
+            const clearedDemo = ensureDemoCleared();
+
             const idea = {
                 id: Date.now(),
                 title: title,
@@ -2861,7 +3050,11 @@ body{display:flex;justify-content:center;background:linear-gradient(#ffffff,#f8f
 
             appData.ideas.push(idea);
             saveAppData();
-            renderIdeas();
+            if (clearedDemo) {
+                updateAllDisplays();
+            } else {
+                renderIdeas();
+            }
             hideIdeaForm();
         }
 
@@ -2872,13 +3065,14 @@ body{display:flex;justify-content:center;background:linear-gradient(#ffffff,#f8f
             appData.ideas.slice().reverse().forEach(idea => {
                 const ideaItem = document.createElement('div');
                 ideaItem.className = 'list-item';
-                
+
                 const date = new Date(idea.createdAt);
                 const formattedDate = `${date.getMonth() + 1}/${date.getDate()}`;
-                
+                const demoBadge = idea.isDemo ? '<span class="demo-badge">체험용</span>' : '';
+
                 ideaItem.innerHTML = `
                     <div class="item-content">
-                        <div class="item-title">${idea.title}</div>
+                        <div class="item-title">${idea.title}${demoBadge}</div>
                         <div class="item-meta">${idea.content.substring(0, 50)}... • ${formattedDate}</div>
                     </div>
                     <div class="item-actions">
@@ -2896,9 +3090,14 @@ body{display:flex;justify-content:center;background:linear-gradient(#ffffff,#f8f
 
         function deleteIdea(id) {
             if (confirm('이 아이디어를 삭제하시겠습니까?')) {
+                const wasDemo = ensureDemoCleared();
                 appData.ideas = appData.ideas.filter(idea => idea.id !== id);
                 saveAppData();
-                renderIdeas();
+                if (wasDemo) {
+                    updateAllDisplays();
+                } else {
+                    renderIdeas();
+                }
             }
         }
 
@@ -2927,6 +3126,8 @@ body{display:flex;justify-content:center;background:linear-gradient(#ffffff,#f8f
                 return;
             }
 
+            const clearedDemo = ensureDemoCleared();
+
             const todo = {
                 id: Date.now(),
                 title: title,
@@ -2940,8 +3141,12 @@ body{display:flex;justify-content:center;background:linear-gradient(#ffffff,#f8f
 
             appData.todos.push(todo);
             saveAppData();
-            renderTodos();
-            
+            if (clearedDemo) {
+                updateAllDisplays();
+            } else {
+                renderTodos();
+            }
+
             cancelConvert();
             alert('아이디어가 할 일로 변환되었습니다!');
             switchTab('todos-tab');
@@ -3157,10 +3362,20 @@ body{display:flex;justify-content:center;background:linear-gradient(#ffffff,#f8f
         }
 
         
-function completeTimer() {
+        function completeTimer() {
             clearInterval(appData.timer.interval);
             appData.timer.isRunning = false;
             appData.timer.isPaused = false;
+
+            if (appData.timer.currentTask && appData.timer.currentTask.isDemo) {
+                if (ensureDemoCleared()) {
+                    saveAppData();
+                    updateAllDisplays();
+                    alert('체험용 데이터가 초기화되었습니다. 새로운 할 일을 실행해보세요!');
+                }
+                resetTimer();
+                return;
+            }
 
             if (appData.timer.currentTask) {
                 // 우선순위: (1) 작업의 가치 금액 -> (2) 시급 기반 계산
@@ -3220,11 +3435,20 @@ function completeTimer() {
 
             if (confirm('정말 포기하시겠습니까?')) {
                 clearInterval(appData.timer.interval);
-                
+
                 if (appData.timer.currentTask) {
+                    if (appData.timer.currentTask.isDemo) {
+                        if (ensureDemoCleared()) {
+                            saveAppData();
+                            updateAllDisplays();
+                            alert('체험용 데이터가 초기화되었습니다. 새로운 할 일을 등록해보세요!');
+                        }
+                        resetTimer();
+                        return;
+                    }
                     const elapsedMinutes = (appData.timer.totalTime - appData.timer.timeLeft) / 60;
                     const lostAmount = Math.floor((appData.goals.targetRate / 60) * elapsedMinutes);
-                    
+
                     // 통계 업데이트
                     appData.stats.totalLoss += lostAmount;
                     appData.stats.failDays++;
