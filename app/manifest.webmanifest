@@ -1,0 +1,22 @@
+{
+  "name": "Billionaire Timer",
+  "short_name": "BillionaireTimer",
+  "description": "시간을 자산으로 바꾸는 프리미엄 집중 타이머",
+  "start_url": "/",
+  "display": "standalone",
+  "background_color": "#ffffff",
+  "theme_color": "#d4af37",
+  "lang": "ko-KR",
+  "icons": [
+    {
+      "src": "/icons/icon-192.png",
+      "sizes": "192x192",
+      "type": "image/png"
+    },
+    {
+      "src": "/icons/icon-512.png",
+      "sizes": "512x512",
+      "type": "image/png"
+    }
+  ]
+}
