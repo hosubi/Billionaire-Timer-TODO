@@ -59,12 +59,10 @@ export function TodoBoard({ initialTodos = [], todos: overrideTodos, hourlyRate 
             <CardContent className="space-y-3">
               {column.items.length === 0 ? (
                 <p className="rounded-lg border border-dashed border-neutral-200 bg-neutral-50 p-4 text-sm text-neutral-500">
-                  아직 태스크가 없습니다.
+                  아직 태스크가 없습니다. 도파민 코인을 모을 미션을 추가해보세요!
                 </p>
               ) : (
-                column.items.map((todo) => (
-                  <TodoCard key={todo.id} todo={todo} hourlyRate={hourlyRate} />
-                ))
+                column.items.map((todo) => <TodoCard key={todo.id} todo={todo} hourlyRate={hourlyRate} />)
               )}
             </CardContent>
           </Card>
@@ -99,7 +97,7 @@ function AddTodoForm({ hourlyRate }: { hourlyRate: number }) {
             <Label htmlFor="todo-title">태스크 제목</Label>
             <Input
               id="todo-title"
-              placeholder="집중할 일을 입력하세요"
+              placeholder="집중할 작업을 입력하세요"
               value={title}
               onChange={(event) => setTitle(event.target.value)}
             />
@@ -109,18 +107,14 @@ function AddTodoForm({ hourlyRate }: { hourlyRate: number }) {
               예상 소요 시간
               <span className="text-xs text-neutral-500">{minutes}분</span>
             </Label>
-            <Slider
-              value={[minutes]}
-              min={15}
-              max={180}
-              step={5}
-              onValueChange={(value) => setMinutes(value[0] ?? 15)}
-            />
+            <Slider value={[minutes]} min={15} max={180} step={5} onValueChange={(value) => setMinutes(value[0] ?? 15)} />
           </div>
         </div>
         <div className="flex items-center justify-between text-sm text-neutral-500">
-          <span>예상 수익</span>
-          <span className="font-semibold text-neutral-900">₩{estimatedProfit.toLocaleString()}</span>
+          <span>예상 보상</span>
+          <span className="font-semibold text-neutral-900">
+            {hourlyRate === 0 ? "-" : `₩${estimatedProfit.toLocaleString()}`}
+          </span>
         </div>
         <div className="flex justify-end">
           <Button onClick={handleSubmit} disabled={!title.trim()}>
@@ -138,6 +132,7 @@ function TodoCard({ todo, hourlyRate }: { todo: TodoSnapshot; hourlyRate: number
   const removeTodo = useTodoStore((state) => state.removeTodo);
   const updateTimerSnapshot = useTimerStore((state) => state.updateSnapshot);
   const startTimer = useTimerStore((state) => state.start);
+
   const profitEstimate = Math.round((hourlyRate / 60) * todo.minutes);
   const lossEstimate = Math.round(profitEstimate * 0.35);
 
@@ -152,7 +147,9 @@ function TodoCard({ todo, hourlyRate }: { todo: TodoSnapshot; hourlyRate: number
       <div className="flex items-start justify-between gap-3">
         <div>
           <h4 className="text-sm font-semibold text-neutral-900">{todo.title}</h4>
-          <p className="text-xs text-neutral-500">예상 {todo.minutes}분 · 수익 ₩{profitEstimate.toLocaleString()}</p>
+          <p className="text-xs text-neutral-500">
+            예상 {todo.minutes}분 · 도파민 보상 {profitEstimate === 0 ? "-" : `₩${profitEstimate.toLocaleString()}`}
+          </p>
         </div>
         <Button variant="ghost" size="icon" onClick={() => removeTodo(todo.id)} className="text-neutral-400 hover:text-red-500">
           <Trash className="h-4 w-4" />
@@ -172,7 +169,8 @@ function TodoCard({ todo, hourlyRate }: { todo: TodoSnapshot; hourlyRate: number
               currentTask: todo.title,
               totalMinutes: todo.minutes,
               expectedProfit: profitEstimate,
-              expectedLoss: lossEstimate
+              expectedLoss: lossEstimate,
+              phase: "focus"
             }));
             startTimer();
           }}

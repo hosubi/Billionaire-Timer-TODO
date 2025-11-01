@@ -5,7 +5,7 @@ export function StreakPanel({ streak }: { streak: StreakSnapshot }) {
   return (
     <Card>
       <CardHeader>
-        <CardTitle>집중 연속 기록</CardTitle>
+        <CardTitle>집중 스트릭</CardTitle>
       </CardHeader>
       <CardContent className="space-y-3 text-sm">
         <Row label="현재 연속 성공" value={`${streak.current}일`} />

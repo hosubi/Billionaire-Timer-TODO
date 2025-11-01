@@ -8,11 +8,11 @@ import type {
 
 export const mockDashboard: DashboardSnapshot = {
   goal: {
-    currentRate: 50000,
-    targetRate: 100000,
-    gap: 50000,
-    daysToTarget: 45,
-    progress: 0.42,
+    currentRate: 55000,
+    targetRate: 110000,
+    gap: 55000,
+    daysToTarget: 42,
+    progress: 0.38,
     focusEfficiency: 0.7
   },
   streak: {
@@ -23,14 +23,19 @@ export const mockDashboard: DashboardSnapshot = {
   },
   timer: {
     totalMinutes: 45,
-    currentTask: "고객 제안서 초안 작성",
+    currentTask: "프리미엄 제안서 초안 작성",
     expectedProfit: 120000,
-    expectedLoss: 28000
+    expectedLoss: 28000,
+    phase: "focus",
+    shortBreakMinutes: 5,
+    longBreakMinutes: 15,
+    roundsUntilLongBreak: 4,
+    completedRounds: 2
   },
   todos: [
     { id: "t1", title: "신규 리드 분석", status: "in-progress", minutes: 45 },
     { id: "t2", title: "블로그 콘셉트 피드백 정리", status: "pending", minutes: 30 },
-    { id: "t3", title: "프레젠테이션 슬라이드 개선", status: "completed", minutes: 60 }
+    { id: "t3", title: "투자자 발표 슬라이드 개선", status: "completed", minutes: 60 }
   ],
   profit: {
     weekProfit: 840000,
@@ -73,9 +78,9 @@ export const mockTimerSessions: TimerSession[] = [
 ];
 
 export const mockIdeas: IdeaSnapshot[] = [
-  { id: "i1", content: "하이엔드 고객용 웹 세미나 기획", createdAt: "2025-10-20", potential: "high" },
+  { id: "i1", content: "하이엔드 고객 웨비나 시리즈", createdAt: "2025-10-20", potential: "high" },
   { id: "i2", content: "VIP 멤버십 온보딩 메일링", createdAt: "2025-10-22", potential: "medium" },
-  { id: "i3", content: "AI 기반 업무 추천 알고리즘", createdAt: "2025-10-24", potential: "high" }
+  { id: "i3", content: "AI 작업 추천 모델 고도화", createdAt: "2025-10-24", potential: "high" }
 ];
 
 export const mockStats: StatsSnapshot = {

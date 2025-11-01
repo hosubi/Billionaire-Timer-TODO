@@ -31,7 +31,7 @@ export function TimerBoard({ sessions }: { sessions: TimerSession[] }) {
     <div className="grid gap-4 lg:grid-cols-3">
       <Card className="lg:col-span-2">
         <CardHeader>
-          <CardTitle>세션 리스트</CardTitle>
+          <CardTitle>집중 세션 리스트</CardTitle>
         </CardHeader>
         <CardContent className="space-y-3">
           {sessions.map((session) => (
@@ -41,12 +41,12 @@ export function TimerBoard({ sessions }: { sessions: TimerSession[] }) {
             >
               <div>
                 <h3 className="text-sm font-semibold text-neutral-900">{session.title}</h3>
-                <p className="text-xs text-neutral-500">{session.minutes}분 · 예상 수익 ₩{session.profit.toLocaleString()}</p>
+                <p className="text-xs text-neutral-500">
+                  {session.minutes}분 · 예상 수익 ₩{session.profit.toLocaleString()}
+                </p>
               </div>
               <div className="flex items-center gap-2">
-                <Badge {...statusStyles[session.status]}>
-                  {statusLabel(session.status)}
-                </Badge>
+                <Badge {...statusStyles[session.status]}>{statusLabel(session.status)}</Badge>
                 <Button size="sm" variant="outline" onClick={() => setSelected(session)}>
                   세부 정보
                 </Button>
@@ -58,7 +58,8 @@ export function TimerBoard({ sessions }: { sessions: TimerSession[] }) {
                       currentTask: session.title,
                       totalMinutes: session.minutes,
                       expectedProfit: session.profit,
-                      expectedLoss: session.loss
+                      expectedLoss: session.loss,
+                      phase: "focus"
                     }));
                     startTimer();
                   }}
@@ -84,7 +85,8 @@ export function TimerBoard({ sessions }: { sessions: TimerSession[] }) {
               <h4 className="text-sm font-semibold text-neutral-900">선택된 세션</h4>
               <p className="text-sm text-neutral-600">{selected.title}</p>
               <p className="text-xs text-neutral-500">
-                {selected.minutes}분 / 수익 ₩{selected.profit.toLocaleString()} / 손실 ₩{selected.loss.toLocaleString()}
+                {selected.minutes}분 · 수익 ₩{selected.profit.toLocaleString()} · 손실 ₩
+                {selected.loss.toLocaleString()}
               </p>
             </div>
           ) : (
@@ -115,5 +117,7 @@ function statusLabel(status: TimerSession["status"]) {
       return "완료";
     case "missed":
       return "미완료";
+    default:
+      return status;
   }
 }

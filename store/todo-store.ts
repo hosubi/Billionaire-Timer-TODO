@@ -1,8 +1,9 @@
 "use client";
 
 import { create } from "zustand";
-import { persist } from "zustand/middleware";
+import { createJSONStorage, persist } from "zustand/middleware";
 import type { TodoSnapshot } from "@/lib/types";
+import { getClientStorage } from "@/lib/storage";
 
 type TodoState = {
   todos: TodoSnapshot[];
@@ -17,7 +18,7 @@ export const useTodoStore = create<TodoState>()(
     (set, get) => ({
       todos: [],
       initialize: (seed) => {
-        if (get().todos.length > 0) return;
+        if (get().todos.length > 0 || seed.length === 0) return;
         set({ todos: seed });
       },
       addTodo: ({ title, minutes }) => {
@@ -47,7 +48,9 @@ export const useTodoStore = create<TodoState>()(
       }
     }),
     {
-      name: "billionaire-timer-todos"
+      name: "billionaire-timer-todos",
+      storage: createJSONStorage(() => getClientStorage()),
+      partialize: (state) => ({ todos: state.todos })
     }
   )
 );

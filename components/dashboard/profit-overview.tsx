@@ -10,14 +10,18 @@ export function ProfitOverview({ profit }: { profit: ProfitSnapshot }) {
       <CardHeader>
         <CardTitle>주간 수익 현황</CardTitle>
         <p className="text-sm text-neutral-500">
-          이번 주 예상 수익 ₩{profit.weekProfit.toLocaleString()} / 손실 ₩{profit.weekLoss.toLocaleString()}
+          이번 주 예상 수익 ₩{profit.weekProfit.toLocaleString()} · 손실 ₩{profit.weekLoss.toLocaleString()}
         </p>
       </CardHeader>
       <CardContent className="h-64">
         <ResponsiveContainer width="100%" height="100%">
           <BarChart data={profit.chart} barCategoryGap={24}>
             <XAxis dataKey="day" axisLine={false} tickLine={false} />
-            <YAxis axisLine={false} tickLine={false} tickFormatter={(value) => `₩${(value / 1000).toFixed(0)}k`} />
+            <YAxis
+              axisLine={false}
+              tickLine={false}
+              tickFormatter={(value) => `₩${Math.round(value / 1000)}k`}
+            />
             <Tooltip
               formatter={(value: number) => `₩${value.toLocaleString()}`}
               labelFormatter={(label) => `${label}요일`}

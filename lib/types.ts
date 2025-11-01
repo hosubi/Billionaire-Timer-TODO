@@ -19,6 +19,11 @@ export type TimerSnapshot = {
   currentTask: string | null;
   expectedProfit: number;
   expectedLoss: number;
+  phase: "focus" | "break";
+  shortBreakMinutes: number;
+  longBreakMinutes: number;
+  roundsUntilLongBreak: number;
+  completedRounds: number;
 };
 
 export type TodoSnapshot = {

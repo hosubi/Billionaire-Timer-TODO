@@ -63,3 +63,13 @@ npm run dev
 - NextAuth로 로그인 플로우 교체 및 API 라우트 연결
 - Mock 데이터를 실제 쿼리로 교체하고 React Query 캐싱 적용
 - Vitest/Playwright 테스트 파이프라인 구성
+
+## MVP 브라우저 캐시 TODO
+
+- [ ] `useTodoStore`, `useTimerStore` 등 `zustand` 퍼시스턴스 키명을 통일(`billionaire-timer-*`)하고 초기화 로직을 분리해 브라우저 캐시만으로도 상태가 유지되도록 정리한다.
+- [ ] `GoalPlanner`, `TimerWidget`, `TodoBoard`에서 입력/선택 시점마다 `localStorage` 스냅샷을 즉시 저장하고, 첫 렌더 시 저장된 버전을 우선 로드하는 `app/hooks/useBrowserCache.ts` 헬퍼를 추가한다.
+- [ ] 타임 타이머를 POMO 시각화 컴포넌트(원형 게이지 + 세션/휴식 단계)로 교체하고, 세션 종료/실패 이벤트를 `localStorage` 기반 도파민 스코어(예: `stats.dopamineCoins`)로 반영한다.
+- [ ] 시급/일급/월급/연봉 계산기를 자동 환산하는 `lib/services/payroll.ts`를 작성하고, 계산 결과를 `goals` 스토어에 저장해 다음 접속 시 동일한 수치를 보여준다.
+- [ ] 캐시된 TODO/세션 데이터를 `app/(dashboard)/dashboard/page.tsx`에서 불러와 손실 회피 그래프·보상 배지 등 게임화 지표를 렌더링하도록 연결한다.
+- [ ] 오프라인에서도 접근 가능한 `/demo` 페이지에 기본 데이터 세트와 사용 가이드를 표시해 브라우저 캐시 기반 MVP 경험을 안내한다.
+- [ ] 브라우저 캐시가 초기화되었을 때를 대비해 `app/layout.tsx`에서 온보딩 모달을 띄우고, `localStorage` 세팅 여부를 확인해 초기 미션 카피를 노출한다.
