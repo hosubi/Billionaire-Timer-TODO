@@ -21,18 +21,23 @@ const COLUMNS: Array<{ key: TodoSnapshot["status"]; title: string }> = [
 
 type TodoBoardProps = {
   initialTodos?: TodoSnapshot[];
+  todos?: TodoSnapshot[];
   hourlyRate?: number;
 };
 
-export function TodoBoard({ initialTodos = [], hourlyRate = 60000 }: TodoBoardProps) {
+export function TodoBoard({ initialTodos = [], todos: overrideTodos, hourlyRate = 60000 }: TodoBoardProps) {
   const todos = useTodoStore((state) => state.todos);
   const initialize = useTodoStore((state) => state.initialize);
 
   useEffect(() => {
+    if (overrideTodos && overrideTodos.length > 0) {
+      initialize(overrideTodos);
+      return;
+    }
     if (initialTodos.length > 0) {
       initialize(initialTodos);
     }
-  }, [initialTodos, initialize]);
+  }, [overrideTodos, initialTodos, initialize]);
 
   const grouped = useMemo(() => {
     return COLUMNS.map((column) => ({
