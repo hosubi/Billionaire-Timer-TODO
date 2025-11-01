@@ -1,5 +1,4 @@
-import "@rushstack/eslint-patch/modern-module-resolution.js";
-import next from "eslint-config-next";
+﻿import next from "eslint-config-next";
 
 export default [
   {
@@ -7,3 +6,4 @@ export default [
   },
   ...next()
 ];
+
